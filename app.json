@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.agenorhouessou.ademain"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,6 +24,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c262e53f-d293-4e81-b54f-e44fd09463c0"
+      }
+    },
+    "owner": "agenorhouessou",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c262e53f-d293-4e81-b54f-e44fd09463c0"
     }
   }
 }

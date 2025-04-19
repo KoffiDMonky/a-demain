@@ -1,0 +1,449 @@
+import React, { useEffect, useState, useRef } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  StatusBar,
+  Easing,
+  Animated,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { LinearGradient } from "expo-linear-gradient";
+//import { AdMobBanner } from 'expo-ads-admob';
+import { Ionicons } from "@expo/vector-icons";
+import TaskItem from "./../components/TaskItem.js";
+import LottieView from "lottie-react-native";
+import { computeStats, updateAndStoreStreaks } from "../utils/storage";
+import { scheduleDailyReminder } from "./../utils/notificationHelper.js";
+
+const HomeScreen = ({ navigation }) => {
+  const [tasks, setTasks] = useState([]);
+  const [tomorrowTasks, setTomorrowTasks] = useState([]);
+  const [animationDone, setAnimationDone] = useState(false);
+  const isFocused = useIsFocused();
+  const flameScale = useRef(new Animated.Value(1)).current;
+  const [currentStreak, setCurrentStreak] = useState(0);
+
+  useEffect(() => {
+    if (isFocused) {
+      loadTasks();
+      loadStreak();
+    }
+  }, [isFocused]);
+
+  const loadTasks = async () => {
+    const data = await AsyncStorage.getItem("tasks");
+    const tasks = data ? JSON.parse(data) : [];
+
+    const today = new Date();
+    const tdy = tasks.filter(
+      (t) => isSameDay(new Date(t.dueDate), today) && t.status !== "abandoned"
+    );
+
+    const tmwDate = new Date();
+    tmwDate.setDate(today.getDate() + 1);
+    const tmw = tasks.filter((t) => isSameDay(new Date(t.dueDate), tmwDate));
+
+    setTasks(tdy);
+    setTomorrowTasks(tmw);
+
+    // ✅ Calcule et stocke le streak à partir de toutes les tâches
+    const stats = computeStats(tasks);
+    setCurrentStreak(stats.currentStreak);
+    await AsyncStorage.setItem(
+      "streaks",
+      JSON.stringify({
+        currentStreak: stats.currentStreak,
+        bestStreak: stats.bestStreak,
+      })
+    );
+
+    await scheduleDailyReminder(tdy);
+
+  };
+
+  const isSameDay = (d1, d2) => {
+    return (
+      d1.getDate() === d2.getDate() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear()
+    );
+  };
+
+  const toggleTaskDone = async (task) => {
+    const stored = await AsyncStorage.getItem("tasks");
+    const allTasks = stored ? JSON.parse(stored) : [];
+
+    const updated = allTasks.map((t) => {
+      if (t.id === task.id) {
+        const newStatus = t.status === "done" ? "pending" : "done";
+        return { ...t, status: newStatus };
+      }
+      return t;
+    });
+
+    await AsyncStorage.setItem("tasks", JSON.stringify(updated));
+    loadTasks(); // 🔁 ça recharge tout + met à jour le streak
+  };
+
+  const updateTaskStatus = async (id, status) => {
+    const stored = await AsyncStorage.getItem("tasks");
+    const allTasks = stored ? JSON.parse(stored) : [];
+    const updated = allTasks.map((t) =>
+      t.id === id
+        ? {
+            ...t,
+            status,
+            snoozeCount:
+              status === "snoozed" ? t.snoozeCount + 1 : t.snoozeCount,
+            dueDate: status === "snoozed" ? tomorrow() : t.dueDate,
+          }
+        : t
+    );
+    await AsyncStorage.setItem("tasks", JSON.stringify(updated));
+    loadTasks();
+  };
+
+  const deleteTask = async (id) => {
+    const stored = await AsyncStorage.getItem("tasks");
+    const allTasks = stored ? JSON.parse(stored) : [];
+    const filtered = allTasks.filter((t) => t.id !== id);
+    await AsyncStorage.setItem("tasks", JSON.stringify(filtered));
+    loadTasks();
+  };
+
+  const isToday = (date) => {
+    const now = new Date();
+    return (
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear()
+    );
+  };
+
+  const tomorrow = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d;
+  };
+
+  const allTasksDone =
+    tasks.length > 0 &&
+    tasks.every((t) => t.status === "done") &&
+    tasks.every((t) => (t.snoozeCount || 0) === 0);
+
+  const loadStreak = async () => {
+    const streaks = await AsyncStorage.getItem("streaks");
+    const { currentStreak } = streaks ? JSON.parse(streaks) : {};
+
+    // if (newStreak > currentStreak) {
+    Animated.sequence([
+      Animated.spring(flameScale, {
+        toValue: 1.3,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+      Animated.spring(flameScale, {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    // }
+
+    setCurrentStreak(currentStreak || 0);
+  };
+
+  const renderItem = ({ item }) => (
+    <TaskItem
+      task={item}
+      onDone={(t) => {
+        // Autorisé : tant que toutes les tâches ne sont pas finies
+        if (!allTasksDone) {
+          toggleTaskDone(t);
+        }
+      }}
+      onSnooze={(t) => {
+        if (!allTasksDone && t.status !== "done")
+          updateTaskStatus(t.id, "snoozed");
+      }}
+      onDelete={(t) => {
+        if (!allTasksDone && t.status !== "done") deleteTask(t.id);
+      }}
+      onEdit={(t) => {
+        if (!allTasksDone && t.status !== "done")
+          navigation.navigate("Nouvelle Tâche", { task: t });
+      }}
+    />
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.side} />
+          <View style={styles.titleWrapper}>
+            <MaskedView
+              maskElement={
+                <Text
+                  style={[styles.appName, { backgroundColor: "transparent" }]}
+                >
+                  À Demain
+                </Text>
+              }
+            >
+              <LinearGradient
+                colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <Text style={[styles.appName, { opacity: 0 }]}>À Demain</Text>
+              </LinearGradient>
+            </MaskedView>
+          </View>
+          <View style={styles.side}>
+            <View style={styles.inline}>
+              {currentStreak > 0 && (
+                <View style={styles.flameContainer}>
+                  <Text style={styles.flameIcon}>🔥</Text>
+                  <Text style={styles.flameText}>{currentStreak}</Text>
+                </View>
+              )}
+              <TouchableOpacity
+                style={styles.fap}
+                onPress={() => navigation.navigate("Nouvelle Tâche")}
+              >
+                <Ionicons name="add" size={22} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        <Text style={styles.title}>Tes tâches du jour</Text>
+        {allTasksDone && !animationDone && (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.lottieContainer,
+              { top: 0, transform: [{ scaleY: -1 }] },
+            ]}
+          >
+            <LottieView
+              source={require("../assets/celebration.json")}
+              autoPlay
+              loop={false}
+              style={{ width: 500, height: 500 }}
+              onAnimationFinish={() => setAnimationDone(true)}
+            />
+          </View>
+        )}
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={tasks}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ flexGrow: 1 }}
+            renderItem={renderItem}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                  Aucune tâche pour aujourd'hui 💤
+                </Text>
+              </View>
+            }
+          />
+          {/* {allTasksDone && (
+            <View style={styles.doneOverlay} pointerEvents="none">
+              <MaskedView
+                maskElement={
+                  <Text
+                    style={[
+                      styles.doneText,
+                      { backgroundColor: "transparent" },
+                    ]}
+                  >
+                    Journée terminée 🎉
+                  </Text>
+                }
+              >
+                <LinearGradient
+                  colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={[styles.doneText, { opacity: 0 }]}>
+                    Journée terminée 🎉
+                  </Text>
+                </LinearGradient>
+              </MaskedView>
+            </View>
+          )} */}
+        </View>
+        {allTasksDone && !animationDone && (
+          <View
+            pointerEvents="none"
+            style={[styles.lottieContainer, { top: "55%" }]}
+          >
+            <LottieView
+              source={require("../assets/celebration.json")}
+              autoPlay
+              loop={false}
+              style={{ width: 500, height: 500 }}
+              onAnimationFinish={() => setAnimationDone(true)}
+            />
+          </View>
+        )}
+      </View>
+    </SafeAreaView>
+  );
+};
+
+export default HomeScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: Platform.OS === "android" ? 5 : 20,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff"
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+
+  side: {
+    minWidth: 80,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+
+  titleWrapper: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  appName: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#4CAF50",
+    letterSpacing: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  task: {
+    padding: 15,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  text: { fontSize: 16 },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10,
+    gap: 15,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  button: { backgroundColor: "#4CAF50", padding: 12, borderRadius: 8 },
+  buttonText: { color: "white", fontWeight: "bold" },
+  empty: {
+    textAlign: "center",
+    fontStyle: "italic",
+    color: "#999",
+    marginTop: 40,
+  },
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    backgroundColor: "#fff",
+  },
+  fap: {
+    backgroundColor: "#FF2E54",
+    borderRadius: 30,
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 30,
+    marginBottom: 10,
+  },
+  taskDone: {
+    backgroundColor: "#D0F0C0", // vert clair
+    borderColor: "#4CAF50",
+    borderWidth: 1,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 50, // évite de coller aux bords
+    backgroundColor: "#fff",
+  },
+  emptyText: {
+    fontSize: 16,
+    fontStyle: "italic",
+    color: "#999",
+    textAlign: "center",
+  },
+  lottieContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
+  inline: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  flameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  flameIcon: {
+    fontSize: 16,
+  },
+
+  flameText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 4,
+  },
+  doneOverlay: {
+    position: "absolute",
+    top: "40%", // ou ajuste à ton goût
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 9,
+    backgroundColor: "#fff",
+    height: "100%",
+  },
+  doneText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+});

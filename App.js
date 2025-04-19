@@ -1,20 +1,64 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function App() {
+import HomeScreen from "./screens/HomeScreen";
+import TomorrowScreen from "./screens/TomorrowScreen";
+import StatsScreen from "./screens/StatsScreen";
+import NewTaskScreen from "./screens/NewTaskScreen";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+// Stack pour l'ajout de tâche
+function RootTabs() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          if (route.name === "Accueil")
+            iconName = focused ? "home" : "home-outline";
+          else if (route.name === "Demain")
+            iconName = focused ? "calendar" : "calendar-outline";
+          else if (route.name === "Stats")
+            iconName = focused ? "bar-chart" : "bar-chart-outline";
+          return (
+            <Ionicons
+              name={iconName}
+              size={size}
+              color={focused ? "#FF2E54" : "black"}
+            />
+          );
+        },
+        tabBarActiveTintColor: "#FF2E54",
+        tabBarInactiveTintColor: "black",
+      })}
+    >
+      <Tab.Screen name="Accueil" component={HomeScreen} />
+      <Tab.Screen name="Demain" component={TomorrowScreen} />
+      <Tab.Screen name="Stats" component={StatsScreen} />
+    </Tab.Navigator>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Retour"
+            component={RootTabs}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="Nouvelle Tâche" component={NewTaskScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
+  );
+}
