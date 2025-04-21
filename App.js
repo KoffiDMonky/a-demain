@@ -10,6 +10,14 @@ import StatsScreen from "./screens/StatsScreen";
 import NewTaskScreen from "./screens/NewTaskScreen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import {
+  useFonts,
+  DancingScript_400Regular,
+  DancingScript_700Bold,
+} from '@expo-google-fonts/dancing-script';
+//import AppLoading from 'expo-app-loading'; // ou SplashScreen si tu utilises Expo SDK 50+
+
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -47,6 +55,16 @@ function RootTabs() {
 }
 
 export default function App() {
+
+  let [fontsLoaded] = useFonts({
+    DancingScript_400Regular,
+    DancingScript_700Bold,
+  });
+  
+  if (!fontsLoaded) {
+    return null; // ou une vue temporaire si tu préfères
+  }
+    
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>

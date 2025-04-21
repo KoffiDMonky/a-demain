@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
+  Image,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -92,23 +93,11 @@ const TomorrowScreen = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <MaskedView
-            maskElement={
-              <Text
-                style={[styles.appName, { backgroundColor: "transparent" }]}
-              >
-                À Demain
-              </Text>
-            }
-          >
-            <LinearGradient
-              colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <Text style={[styles.appName, { opacity: 0 }]}>À Demain</Text>
-            </LinearGradient>
-          </MaskedView>
+        <Image
+            source={require("../assets/Logo_Header.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
         <Text style={styles.title}>Tâches prévues pour demain</Text>
         <FlatList
@@ -138,13 +127,19 @@ const TomorrowScreen = ({ navigation }) => {
 export default TomorrowScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: Platform.OS === "android" ? 5 : 20, paddingHorizontal : 20, backgroundColor: "#fff" },
+  container: { flex: 1, paddingTop: 5, paddingHorizontal : 20, backgroundColor: "#fff" },
   header: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
+    justifyContent: "space-between"
   },
+  logo: {
+    width: 160,
+    height: 40,
+    marginRight: 8,
+  },  
   appName: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
     color: "#4CAF50",
     letterSpacing: 1,

@@ -4,13 +4,13 @@
     "slug": "a-demain",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/Logo_A_demain_redandwhite.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/Logo_A_demain_redandwhite.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FF2E54"
     },
     "ios": {
       "supportsTablet": true,
@@ -18,8 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/Logo_A_demain_redandwhite.png",
+        "backgroundColor": "#FF2E54"
       }
     },
     "web": {
@@ -36,6 +36,9 @@
     },
     "updates": {
       "url": "https://u.expo.dev/c262e53f-d293-4e81-b54f-e44fd09463c0"
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

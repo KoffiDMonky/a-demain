@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
@@ -64,13 +65,13 @@ const StatsScreen = ({ navigation }) => {
   const loadStats = async () => {
     const data = await AsyncStorage.getItem("tasks");
     const tasks = data ? JSON.parse(data) : [];
-  
+
     const today = new Date();
     const isSameDay = (d1, d2) =>
       d1.getFullYear() === d2.getFullYear() &&
       d1.getMonth() === d2.getMonth() &&
       d1.getDate() === d2.getDate();
-  
+
     const todayTasks = tasks.filter(
       (t) =>
         t.dueDate &&
@@ -78,33 +79,39 @@ const StatsScreen = ({ navigation }) => {
         t.status !== "abandoned"
     );
     const todayDone = todayTasks.filter((t) => t.status === "done").length;
-  
+
     const computed = computeStats(tasks);
     setStats({
       ...computed,
       todayTotal: todayTasks.length,
       todayDone,
     });
-  
-    await AsyncStorage.setItem("streaks", JSON.stringify({
-      currentStreak: computed.currentStreak,
-      bestStreak: computed.bestStreak,
-    }));
+
+    await AsyncStorage.setItem(
+      "streaks",
+      JSON.stringify({
+        currentStreak: computed.currentStreak,
+        bestStreak: computed.bestStreak,
+      })
+    );
   };
-    
+
   const computeStats = (tasks) => {
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((t) => t.status === "done").length;
-    const totalSnoozes = tasks.reduce((acc, t) => acc + (t.snoozeCount || 0), 0);
+    const totalSnoozes = tasks.reduce(
+      (acc, t) => acc + (t.snoozeCount || 0),
+      0
+    );
     const snoozePercentage =
       totalTasks > 0 ? ((totalSnoozes / totalTasks) * 100).toFixed(1) : 0;
-  
+
     const toDateKey = (date) => {
       const d = new Date(date);
       d.setHours(0, 0, 0, 0);
       return d.toISOString().split("T")[0];
     };
-  
+
     const groupByDay = {};
     tasks.forEach((t) => {
       if (!t.dueDate) return;
@@ -112,33 +119,33 @@ const StatsScreen = ({ navigation }) => {
       if (!groupByDay[dateKey]) groupByDay[dateKey] = [];
       groupByDay[dateKey].push(t);
     });
-  
+
     console.log("🗓️ Dates regroupées :", groupByDay);
-  
+
     const sortedDays = Object.keys(groupByDay).sort();
     let lastValidDate = null;
     let currentStreak = 0;
     let bestStreak = 0;
-  
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-  
+
     for (const dateStr of sortedDays) {
       const thisDate = new Date(dateStr);
       if (thisDate > today) {
         console.log(`⏭️ Ignoré (futur): ${dateStr}`);
         continue;
       }
-  
+
       const dayTasks = groupByDay[dateStr];
       const allDone = dayTasks.every((t) => t.status === "done");
       const anySnoozed = dayTasks.some((t) => t.snoozeCount > 0);
       const anyAbandoned = dayTasks.some((t) => t.status === "abandoned");
-  
+
       console.log(
         `📆 ${dateStr} → allDone: ${allDone}, snoozed: ${anySnoozed}, abandoned: ${anyAbandoned}`
       );
-  
+
       if (allDone && !anySnoozed && !anyAbandoned) {
         if (
           lastValidDate &&
@@ -155,7 +162,7 @@ const StatsScreen = ({ navigation }) => {
         lastValidDate = null;
       }
     }
-  
+
     const result = {
       totalTasks,
       completedTasks,
@@ -164,11 +171,11 @@ const StatsScreen = ({ navigation }) => {
       bestStreak,
       currentStreak,
     };
-  
+
     console.log("📊 Résultat final :", result);
     return result;
   };
-  
+
   const getMotivationalMessage = () => {
     const messages = [
       "Tu avances, c’est l’essentiel 🌱",
@@ -237,25 +244,12 @@ const StatsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.side} />
+          <Image
+            source={require("../assets/Logo_Header.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <View style={styles.titleWrapper}>
-            <MaskedView
-              maskElement={
-                <Text
-                  style={[styles.appName, { backgroundColor: "transparent" }]}
-                >
-                  À Demain
-                </Text>
-              }
-            >
-              <LinearGradient
-                colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Text style={[styles.appName, { opacity: 0 }]}>À Demain</Text>
-              </LinearGradient>
-            </MaskedView>
           </View>
           <View style={styles.side}>
             <TouchableOpacity
@@ -321,7 +315,7 @@ const StatsScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity> */}
 
-        <View style={{ marginTop: 30 }}>
+        {/* <View style={{ marginTop: 30 }}>
           <TouchableOpacity
             style={[styles.devButton, { backgroundColor: "#FFCDD2" }]}
             onPress={handleClearTasks}
@@ -337,7 +331,7 @@ const StatsScreen = ({ navigation }) => {
               ✨ Remplir avec données propres
             </Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
     </SafeAreaView>
   );
@@ -361,9 +355,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 10,
   },
-
+  logo: {
+    width: 160,
+    height: 40,
+    marginRight: 8,
+  },  
   side: {
     width: 40, // même largeur à gauche et à droite
     alignItems: "center",
@@ -374,7 +372,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  appName: { fontSize: 28, fontWeight: "bold", letterSpacing: 1 },
+  appName: { fontSize: 32, fontWeight: "bold", letterSpacing: 1 },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
   fap: {
     backgroundColor: "#FF2E54",

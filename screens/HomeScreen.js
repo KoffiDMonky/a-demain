@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
+  Image,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -65,7 +66,6 @@ const HomeScreen = ({ navigation }) => {
     );
 
     await scheduleDailyReminder(tdy);
-
   };
 
   const isSameDay = (d1, d2) => {
@@ -186,31 +186,21 @@ const HomeScreen = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.side} />
-          <View style={styles.titleWrapper}>
-            <MaskedView
-              maskElement={
-                <Text
-                  style={[styles.appName, { backgroundColor: "transparent" }]}
-                >
-                  À Demain
-                </Text>
-              }
-            >
-              <LinearGradient
-                colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Text style={[styles.appName, { opacity: 0 }]}>À Demain</Text>
-              </LinearGradient>
-            </MaskedView>
-          </View>
+          <Image
+            source={require("../assets/Logo_Header.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <View style={styles.side}>
             <View style={styles.inline}>
               {currentStreak > 0 && (
                 <View style={styles.flameContainer}>
-                  <Text style={styles.flameIcon}>🔥</Text>
+                  {/* <Text style={styles.flameIcon}>🔥</Text> */}
+                  <Image
+                    source={require("../assets/Flamme_A_demain.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+                    style={styles.flameLogo}
+                    resizeMode="contain"
+                  />
                   <Text style={styles.flameText}>{currentStreak}</Text>
                 </View>
               )}
@@ -306,17 +296,21 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? 5 : 20,
+    paddingTop: 5,
     paddingHorizontal: 20,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 10,
   },
-
+  logo: {
+    width: 160,
+    height: 40,
+    marginRight: 8,
+  },  
   side: {
     minWidth: 80,
     flexDirection: "row",
@@ -330,8 +324,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   appName: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
+    //fontFamily: "DancingScript_700Bold",
     color: "#4CAF50",
     letterSpacing: 1,
   },
@@ -425,11 +420,14 @@ const styles = StyleSheet.create({
   flameIcon: {
     fontSize: 16,
   },
-
+  flameLogo: {
+    width: 30,
+    height: 30,
+  },
   flameText: {
     fontSize: 16,
     fontWeight: "bold",
-    marginLeft: 4,
+
   },
   doneOverlay: {
     position: "absolute",
