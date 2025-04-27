@@ -20,7 +20,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import TaskItem from "./../components/TaskItem.js";
 import LottieView from "lottie-react-native";
-import { computeStats, updateAndStoreStreaks } from "../utils/storage";
+import { computeStats } from "../utils/storage";
 import { scheduleDailyReminder } from "./../utils/notificationHelper.js";
 
 const HomeScreen = ({ navigation }) => {
@@ -31,7 +31,85 @@ const HomeScreen = ({ navigation }) => {
   const flameScale = useRef(new Animated.Value(1)).current;
   const [currentStreak, setCurrentStreak] = useState(0);
 
+  const injectTutorialTasks = async (onInjected) => {
+    const existing = await AsyncStorage.getItem("tasks");
+    if (existing) return;
+  
+    const now = new Date();
+    const today = new Date(now.setHours(6, 0, 0, 0));
+  
+    const tutorialTasks = [
+      {
+        id: "tutorial-1",
+        text: "Ajouter une tâche pour demain 📅",
+        dueDate: today.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "tutorial-2",
+        text: "Rester appuyé sur une tâche pour l’éditer ✏️",
+        dueDate: today.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "tutorial-5",
+        text: "Appuie sur la tâche pour la cocher ✅",
+        dueDate: today.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "tutorial-3",
+        text: "Glisse une tâche vers la droite pour la reporter à demain ➡️",
+        dueDate: today.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "tutorial-4",
+        text: "Glisse une tâche vers la gauche pour la supprimer ⬅️",
+        dueDate: today.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "tutorial-7",
+        text: "Supprimer les tâches prévues demain 🗑️",
+        dueDate: today.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "tutorial-6",
+        text: "Termine toutes les tâches 🎉",
+        dueDate: today.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        createdAt: new Date().toISOString(),
+      },
+    ];
+  
+    await AsyncStorage.setItem("tasks", JSON.stringify(tutorialTasks));
+  
+    if (onInjected) {
+      onInjected(); // recharge la liste après injection
+    }
+  };
+  
   useEffect(() => {
+    injectTutorialTasks(loadTasks);
+  }, []);
+
+  useEffect(() => {
+    loadStreak();
     if (isFocused) {
       loadTasks();
       loadStreak();
@@ -90,6 +168,7 @@ const HomeScreen = ({ navigation }) => {
 
     await AsyncStorage.setItem("tasks", JSON.stringify(updated));
     loadTasks(); // 🔁 ça recharge tout + met à jour le streak
+    loadStreak();
   };
 
   const updateTaskStatus = async (id, status) => {
@@ -138,26 +217,13 @@ const HomeScreen = ({ navigation }) => {
     tasks.every((t) => t.status === "done") &&
     tasks.every((t) => (t.snoozeCount || 0) === 0);
 
-  const loadStreak = async () => {
-    const streaks = await AsyncStorage.getItem("streaks");
-    const { currentStreak } = streaks ? JSON.parse(streaks) : {};
-
-    // if (newStreak > currentStreak) {
-    Animated.sequence([
-      Animated.spring(flameScale, {
-        toValue: 1.3,
-        friction: 3,
-        useNativeDriver: true,
-      }),
-      Animated.spring(flameScale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    // }
-
-    setCurrentStreak(currentStreak || 0);
-  };
+    const loadStreak = async () => {
+         // on recalcule le streak à partir de toutes les tâches stockées
+         const data = await AsyncStorage.getItem("tasks");
+         const allTasks = data ? JSON.parse(data) : [];
+         const stats = computeStats(allTasks);
+         setCurrentStreak(stats.currentStreak);
+      };
 
   const renderItem = ({ item }) => (
     <TaskItem
@@ -245,30 +311,14 @@ const HomeScreen = ({ navigation }) => {
               </View>
             }
           />
-          {/* {allTasksDone && (
+          {/* {allTasksDone && !animationDone && (
             <View style={styles.doneOverlay} pointerEvents="none">
-              <MaskedView
-                maskElement={
-                  <Text
-                    style={[
-                      styles.doneText,
-                      { backgroundColor: "transparent" },
-                    ]}
-                  >
-                    Journée terminée 🎉
-                  </Text>
-                }
-              >
-                <LinearGradient
-                  colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={[styles.doneText, { opacity: 0 }]}>
-                    Journée terminée 🎉
-                  </Text>
-                </LinearGradient>
-              </MaskedView>
+              <Image
+                source={require("../assets/Flamme_A_demain.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+                style={styles.streakFlame}
+                resizeMode="contain"
+              />
+              <Text style={styles.flameCurrentStreakText}>{currentStreak}</Text>
             </View>
           )} */}
         </View>
@@ -294,6 +344,11 @@ const HomeScreen = ({ navigation }) => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    backgroundColor: "#fff",
+  },
   container: {
     flex: 1,
     paddingTop: 5,
@@ -310,7 +365,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 40,
     marginRight: 8,
-  },  
+  },
   side: {
     minWidth: 80,
     flexDirection: "row",
@@ -360,11 +415,6 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     color: "#999",
     marginTop: 40,
-  },
-  safeArea: {
-    flex: 1,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    backgroundColor: "#fff",
   },
   fap: {
     backgroundColor: "#FF2E54",
@@ -427,7 +477,6 @@ const styles = StyleSheet.create({
   flameText: {
     fontSize: 16,
     fontWeight: "bold",
-
   },
   doneOverlay: {
     position: "absolute",
@@ -444,4 +493,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+  streakFlame: {
+    height: 200,
+    width: 200,
+  },
+  flameCurrentStreakText:{
+color: "#fff",
+position: "absolute",
+top : 100,
+fontSize: 60,
+fontWeight: "bold"
+  }
 });

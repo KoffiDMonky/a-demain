@@ -249,15 +249,28 @@ const StatsScreen = ({ navigation }) => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <View style={styles.titleWrapper}>
-          </View>
+          <View style={styles.titleWrapper}></View>
           <View style={styles.side}>
-            <TouchableOpacity
-              style={styles.fap}
-              onPress={() => navigation.navigate("Nouvelle Tâche")}
-            >
-              <Ionicons name="add" size={22} color="#fff" />
-            </TouchableOpacity>
+            <View style={styles.inline}>
+              {stats.currentStreak > 0 && (
+                <View style={styles.flameContainer}>
+                  {/* <Text style={styles.flameIcon}>🔥</Text> */}
+                  <Image
+                    source={require("../assets/Flamme_A_demain.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+                    style={styles.flameLogo}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.flameText}>{stats.currentStreak}</Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={styles.fap}
+                onPress={() => navigation.navigate("Nouvelle Tâche")}
+              >
+                <Ionicons name="add" size={22} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -315,7 +328,7 @@ const StatsScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity> */}
 
-        {/* <View style={{ marginTop: 30 }}>
+        <View style={{ marginTop: 30 }}>
           <TouchableOpacity
             style={[styles.devButton, { backgroundColor: "#FFCDD2" }]}
             onPress={handleClearTasks}
@@ -331,7 +344,7 @@ const StatsScreen = ({ navigation }) => {
               ✨ Remplir avec données propres
             </Text>
           </TouchableOpacity>
-        </View> */}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -346,8 +359,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   container: {
-    flexGrow: 1,
-    paddingTop: Platform.OS === "android" ? 5 : 20,
+    flex: 1,
+    paddingTop: 5,
     paddingHorizontal: 20,
     backgroundColor: "#fff",
   },
@@ -361,11 +374,12 @@ const styles = StyleSheet.create({
     width: 160,
     height: 40,
     marginRight: 8,
-  },  
+  },
   side: {
-    width: 40, // même largeur à gauche et à droite
+    minWidth: 80,
+    flexDirection: "row",
+    justifyContent: "flex-end",
     alignItems: "center",
-    justifyContent: "center",
   },
   titleWrapper: {
     flex: 1,
@@ -431,5 +445,27 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     color: "#333",
+  },
+  inline: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  flameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  flameIcon: {
+    fontSize: 16,
+  },
+  flameLogo: {
+    width: 30,
+    height: 30,
+  },
+  flameText: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

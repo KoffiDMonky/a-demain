@@ -11,7 +11,7 @@ export const scheduleDailyReminder = async (tasks) => {
   }
 
   // ✍️ Construire le message avec les tâches
-  let body = "Tu as des tâches à faire aujourd’hui 🧠";
+  let body = "Tu n'as pas de tâches à faire aujourd’hui 🧠";
   if (tasks && tasks.length > 0) {
     const lines = tasks.slice(0, 5).map((t) => `• ${t.text}`);
     body = ["Tes tâches du jour :", ...lines].join("\n");
