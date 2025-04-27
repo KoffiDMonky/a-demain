@@ -1,43 +1,50 @@
-import * as Notifications from "expo-notifications";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const scheduleDailyReminder = async (tasks) => {
-  const todayKey = new Date().toISOString().split("T")[0]; // ex: "2025-04-19"
-  const lastScheduled = await AsyncStorage.getItem("lastNotificationDate");
-
-  if (lastScheduled === todayKey) {
-    console.log("📆 Notification déjà planifiée aujourd'hui");
-    return;
+// Fonction pour annuler l'ancienne notification
+export async function cancelPreviousReminder() {
+  const storedId = await AsyncStorage.getItem('dailyReminderId');
+  if (storedId) {
+    await Notifications.cancelScheduledNotificationAsync(storedId);
+    await AsyncStorage.removeItem('dailyReminderId');
   }
+}
 
-  // ✍️ Construire le message avec les tâches
-  let body = "Tu n'as pas de tâches à faire aujourd’hui 🧠";
-  if (tasks && tasks.length > 0) {
-    const lines = tasks.slice(0, 5).map((t) => `• ${t.text}`);
+// Fonction pour programmer une notification pour demain matin à 8h
+export async function scheduleDailyReminder(tasksForTomorrow = []) {
+  await cancelPreviousReminder();
+
+  const now = new Date();
+  const tomorrow8h = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+    8,
+    0,
+    0
+  );
+
+  let body = "";
+
+  if (tasksForTomorrow && tasksForTomorrow.length > 0) {
+    const lines = tasksForTomorrow.slice(0, 5).map((t) => `• ${t.text}`);
     body = ["Tes tâches du jour :", ...lines].join("\n");
 
-    if (tasks.length > 5) {
-      body += `\n...et ${tasks.length - 5} autres`;
+    if (tasksForTomorrow.length > 5) {
+      body += `\n...et ${tasksForTomorrow.length - 5} autres`;
     }
+  } else {
+    body = "Tu n'as pas de tâches à faire aujourd'hui. Profite-en ! 🧠";
   }
 
-  // 🧼 Supprime les anciennes notifications programmées
-  await Notifications.cancelAllScheduledNotificationsAsync();
-
-  // ⏰ Planifie la notification
-  await Notifications.scheduleNotificationAsync({
+  const id = await Notifications.scheduleNotificationAsync({
     content: {
-      title: "À Demain ✨",
+      title: "À Demain 📅",
       body,
+      sound: "default",
     },
-    trigger: {
-      hour: 8,
-      minute: 0,
-      repeats: false,
-    },
+    trigger: tomorrow8h,
   });
 
-  // 🧠 Marque cette date comme planifiée
-  await AsyncStorage.setItem("lastNotificationDate", todayKey);
-  console.log("✅ Notification planifiée avec résumé pour", todayKey);
-};
+  await AsyncStorage.setItem('dailyReminderId', id);
+}

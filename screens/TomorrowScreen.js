@@ -32,10 +32,14 @@ const TomorrowScreen = ({ navigation }) => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const filtered = tasks.filter((t) =>
-      isSameDay(new Date(t.dueDate), tomorrow)
+    const filtered = tasks.filter(
+      (t) =>
+        isSameDay(new Date(t.dueDate), tomorrow) && t.status !== "abandoned"
     );
     setTomorrowTasks(filtered);
+
+    // 🔥 Reprogrammer la notification du lendemain
+    await scheduleDailyReminder(filtered);
   };
 
   const isSameDay = (d1, d2) => {
@@ -93,7 +97,7 @@ const TomorrowScreen = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-        <Image
+          <Image
             source={require("../assets/Logo_Header.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
             style={styles.logo}
             resizeMode="contain"
@@ -127,17 +131,22 @@ const TomorrowScreen = ({ navigation }) => {
 export default TomorrowScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 5, paddingHorizontal : 20, backgroundColor: "#fff" },
+  container: {
+    flex: 1,
+    paddingTop: 5,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
+  },
   header: {
     alignItems: "center",
     marginBottom: 10,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   logo: {
     width: 160,
     height: 40,
     marginRight: 8,
-  },  
+  },
   appName: {
     fontSize: 32,
     fontWeight: "bold",
@@ -145,8 +154,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 10
- },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
   text: { fontSize: 16 },
   empty: {
     textAlign: "center",

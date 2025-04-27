@@ -34,10 +34,10 @@ const HomeScreen = ({ navigation }) => {
   const injectTutorialTasks = async (onInjected) => {
     const existing = await AsyncStorage.getItem("tasks");
     if (existing) return;
-  
+
     const now = new Date();
     const today = new Date(now.setHours(6, 0, 0, 0));
-  
+
     const tutorialTasks = [
       {
         id: "tutorial-1",
@@ -96,14 +96,14 @@ const HomeScreen = ({ navigation }) => {
         createdAt: new Date().toISOString(),
       },
     ];
-  
+
     await AsyncStorage.setItem("tasks", JSON.stringify(tutorialTasks));
-  
+
     if (onInjected) {
       onInjected(); // recharge la liste après injection
     }
   };
-  
+
   useEffect(() => {
     injectTutorialTasks(loadTasks);
   }, []);
@@ -127,7 +127,7 @@ const HomeScreen = ({ navigation }) => {
 
     const tmwDate = new Date();
     tmwDate.setDate(today.getDate() + 1);
-    const tmw = tasks.filter((t) => isSameDay(new Date(t.dueDate), tmwDate));
+    const tmw = tasks.filter((t) => isSameDay(new Date(t.dueDate), tmwDate) && t.status !== "abandoned");
 
     setTasks(tdy);
     setTomorrowTasks(tmw);
@@ -143,7 +143,8 @@ const HomeScreen = ({ navigation }) => {
       })
     );
 
-    await scheduleDailyReminder(tdy);
+    // 🔥 ➔ Programmation de la notification
+    await scheduleDailyReminder(tmw);
   };
 
   const isSameDay = (d1, d2) => {
@@ -217,13 +218,13 @@ const HomeScreen = ({ navigation }) => {
     tasks.every((t) => t.status === "done") &&
     tasks.every((t) => (t.snoozeCount || 0) === 0);
 
-    const loadStreak = async () => {
-         // on recalcule le streak à partir de toutes les tâches stockées
-         const data = await AsyncStorage.getItem("tasks");
-         const allTasks = data ? JSON.parse(data) : [];
-         const stats = computeStats(allTasks);
-         setCurrentStreak(stats.currentStreak);
-      };
+  const loadStreak = async () => {
+    // on recalcule le streak à partir de toutes les tâches stockées
+    const data = await AsyncStorage.getItem("tasks");
+    const allTasks = data ? JSON.parse(data) : [];
+    const stats = computeStats(allTasks);
+    setCurrentStreak(stats.currentStreak);
+  };
 
   const renderItem = ({ item }) => (
     <TaskItem
@@ -497,11 +498,11 @@ const styles = StyleSheet.create({
     height: 200,
     width: 200,
   },
-  flameCurrentStreakText:{
-color: "#fff",
-position: "absolute",
-top : 100,
-fontSize: 60,
-fontWeight: "bold"
-  }
+  flameCurrentStreakText: {
+    color: "#fff",
+    position: "absolute",
+    top: 100,
+    fontSize: 60,
+    fontWeight: "bold",
+  },
 });
