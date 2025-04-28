@@ -20,7 +20,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/Logo_A_demain_redandwhite.png",
         "backgroundColor": "#FF2E54"
-      }
+      },
+      "package": "com.agenorhouessou.ademain"
     },
     "web": {
       "favicon": "./assets/favicon.png"

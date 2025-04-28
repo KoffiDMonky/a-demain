@@ -328,23 +328,7 @@ const StatsScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity> */}
 
-        {/* <View style={{ marginTop: 30 }}>
-          <TouchableOpacity
-            style={[styles.devButton, { backgroundColor: "#FFCDD2" }]}
-            onPress={handleClearTasks}
-          >
-            <Text style={styles.devButtonText}>🧹 Supprimer les données</Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.devButton, { backgroundColor: "#C8E6C9" }]}
-            onPress={handleSeedTasks}
-          >
-            <Text style={styles.devButtonText}>
-              ✨ Remplir avec données propres
-            </Text>
-          </TouchableOpacity>
-        </View> */}
       </View>
     </SafeAreaView>
   );

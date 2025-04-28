@@ -16,7 +16,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
-//import { AdMobBanner } from 'expo-ads-admob';
 import { Ionicons } from "@expo/vector-icons";
 import TaskItem from "./../components/TaskItem.js";
 import LottieView from "lottie-react-native";
