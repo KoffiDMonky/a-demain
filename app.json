@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "a-demain",
+    "name": "À Demain",
     "slug": "a-demain",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -18,8 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/Logo_A_demain_redandwhite.png",
-        "backgroundColor": "#FF2E54"
+        "foregroundImage": "./assets/Logo_A_demain.png",
+        "backgroundColor": "#FFFFFF"
       },
       "package": "com.agenorhouessou.ademain"
     },
