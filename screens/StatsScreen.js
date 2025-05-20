@@ -17,6 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { computeStats } from "../utils/storage";
+import { getStreakData } from "../utils/streak";
 
 const StatItem = ({ label, value }) => (
   <LinearGradient
@@ -42,16 +43,20 @@ const StatsScreen = ({ navigation }) => {
     todayDone: 0,
   });
 
+  const [streak, setStreak] = useState(0);
+
   const isFocused = useIsFocused();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
 
+  // Chargement des stats quand l'écran est focus
   useEffect(() => {
     if (isFocused) {
       loadStats();
-      //logTasks();
     }
   }, [isFocused]);
 
+  // Animation de la barre de progression
   useEffect(() => {
     const percentage = (stats.todayDone / (stats.todayTotal || 1)) * 100;
     Animated.timing(progressAnim, {
@@ -61,6 +66,16 @@ const StatsScreen = ({ navigation }) => {
       useNativeDriver: false,
     }).start();
   }, [stats.todayDone, stats.todayTotal]);
+
+  // Après le chargement, animation d'apparition des blocs
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      easing: Easing.out(Easing.exp),
+      useNativeDriver: true,
+    }).start();
+  }, [stats]);
 
   const loadStats = async () => {
     const data = await AsyncStorage.getItem("tasks");
@@ -245,22 +260,22 @@ const StatsScreen = ({ navigation }) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
-            source={require("../assets/Logo_Header.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+            source={require("../assets/Logo_Header.png")}
             style={styles.logo}
             resizeMode="contain"
           />
           <View style={styles.titleWrapper}></View>
           <View style={styles.side}>
             <View style={styles.inline}>
-              {stats.currentStreak > 0 && (
+              {streak > 0 && (
                 <View style={styles.flameContainer}>
                   {/* <Text style={styles.flameIcon}>🔥</Text> */}
                   <Image
-                    source={require("../assets/Flamme_A_demain.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+                    source={require("../assets/Flamme_A_demain.png")}
                     style={styles.flameLogo}
                     resizeMode="contain"
                   />
-                  <Text style={styles.flameText}>{stats.currentStreak}</Text>
+                  <Text style={styles.flameText}>{streak}</Text>
                 </View>
               )}
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import { Ionicons } from "@expo/vector-icons";
 import TaskItem from "./../components/TaskItem.js";
 import LottieView from "lottie-react-native";
 import { computeStats } from "../utils/storage";
+import { syncStreak } from "../utils/streak";
 import { scheduleDailyReminder } from "./../utils/notificationHelper.js";
 
 const HomeScreen = ({ navigation }) => {
@@ -29,6 +30,7 @@ const HomeScreen = ({ navigation }) => {
   const isFocused = useIsFocused();
   const flameScale = useRef(new Animated.Value(1)).current;
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [streak, setStreak] = useState(0);
 
   const injectTutorialTasks = async (onInjected) => {
     const existing = await AsyncStorage.getItem("tasks");
@@ -247,6 +249,43 @@ const HomeScreen = ({ navigation }) => {
       }}
     />
   );
+
+  useEffect(() => {
+    const todayTasks = tasks.filter(t => {
+      const d = new Date(t.dueDate);
+      const now = new Date();
+      return (
+        d.getFullYear() === now.getFullYear() &&
+        d.getMonth() === now.getMonth() &&
+        d.getDate() === now.getDate()
+      );
+    });
+    syncStreak(todayTasks).then(setStreak);
+  }, [tasks]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        streak > 0 && (
+          <View style={styles.flameContainer}>
+            <Image
+              source={require("../assets/Flamme_A_demain.png")}
+              style={styles.flameLogo}
+              resizeMode="contain"
+            />
+            <Text style={styles.flameText}>{streak}</Text>
+          </View>
+        )
+      ),
+    });
+  }, [navigation, streak]);
+
+  useLayoutEffect(() => {
+    if (allTasksDone) {
+      setAnimationDone(false);
+    }
+  }, [allTasksDone]);
+  
 
   return (
     <SafeAreaView style={styles.safeArea}>
