@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -67,25 +67,25 @@ export default function App() {
     return null; 
   }
 
-  useEffect(() => {
-    // 1) Vérifier l’état actuel
-    Notifications.getPermissionsAsync()
-      .then(({ status }) => {
-        if (status !== 'granted') {
-          // 2) Demander la permission
-          return Notifications.requestPermissionsAsync();
-        }
-        return { status };
-      })
-      .then(({ status }) => {
-        if (status !== 'granted') {
-          Alert.alert(
-            "Notifications désactivées",
-            "Activez-les dans les réglages pour recevoir les rappels matinaux."
-          );
-        }
-      });
-  }, []);
+  // useEffect(() => {
+  //   // 1) Vérifier l’état actuel
+  //   Notifications.getPermissionsAsync()
+  //     .then(({ status }) => {
+  //       if (status !== 'granted') {
+  //         // 2) Demander la permission
+  //         return Notifications.requestPermissionsAsync();
+  //       }
+  //       return { status };
+  //     })
+  //     .then(({ status }) => {
+  //       if (status !== 'granted') {
+  //         Alert.alert(
+  //           "Notifications désactivées",
+  //           "Activez-les dans les réglages pour recevoir les rappels matinaux."
+  //         );
+  //       }
+  //     });
+  // }, []);
 
   useEffect(() => {
     ensureNotificationPermission();
