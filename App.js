@@ -9,6 +9,8 @@ import TomorrowScreen from "./screens/TomorrowScreen";
 import StatsScreen from "./screens/StatsScreen";
 import NewTaskScreen from "./screens/NewTaskScreen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import './utils/notificationHelper';
+import { ensureNotificationPermission } from './utils/notificationHelper';
 
 import {
   useFonts,
@@ -62,8 +64,32 @@ export default function App() {
   });
   
   if (!fontsLoaded) {
-    return null; // ou une vue temporaire si tu préfères
+    return null; 
   }
+
+  useEffect(() => {
+    // 1) Vérifier l’état actuel
+    Notifications.getPermissionsAsync()
+      .then(({ status }) => {
+        if (status !== 'granted') {
+          // 2) Demander la permission
+          return Notifications.requestPermissionsAsync();
+        }
+        return { status };
+      })
+      .then(({ status }) => {
+        if (status !== 'granted') {
+          Alert.alert(
+            "Notifications désactivées",
+            "Activez-les dans les réglages pour recevoir les rappels matinaux."
+          );
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+    ensureNotificationPermission();
+  }, []);
     
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

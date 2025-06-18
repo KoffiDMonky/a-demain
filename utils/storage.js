@@ -107,3 +107,9 @@ export const updateAndStoreStreaks = async (tasks, setStreakState) => {
   );
   if (setStreakState) setStreakState(stats.currentStreak);
 };
+
+
+const getStoredTasks = async () => {
+  const data = await AsyncStorage.getItem("tasks");
+  return data ? JSON.parse(data) : [];
+};

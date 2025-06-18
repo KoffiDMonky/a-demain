@@ -19,9 +19,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import TaskItem from "./../components/TaskItem.js";
 import LottieView from "lottie-react-native";
-import { computeStats } from "../utils/storage";
+import { computeStats, getStoredTasks } from "../utils/storage";
 import { syncStreak } from "../utils/streak";
-import { scheduleDailyReminder } from "./../utils/notificationHelper.js";
+import { scheduleDailyReminder, ensureNotificationPermission } from "./../utils/notificationHelper.js";
 
 const HomeScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
@@ -34,7 +34,10 @@ const HomeScreen = ({ navigation }) => {
 
   const injectTutorialTasks = async (onInjected) => {
     const existing = await AsyncStorage.getItem("tasks");
-    if (existing) return;
+    if (existing) {
+      const parsed = JSON.parse(existing);
+      if (parsed.length > 0) return;
+    }
 
     const now = new Date();
     const today = new Date(now.setHours(6, 0, 0, 0));
@@ -118,11 +121,9 @@ const HomeScreen = ({ navigation }) => {
   }, [isFocused]);
 
   const loadTasks = async () => {
-    const data = await AsyncStorage.getItem("tasks");
-    const tasks = data ? JSON.parse(data) : [];
-
+    const tasks = await getStoredTasks();
     const today = new Date();
-    const tdy = tasks.filter(
+    const todayTasks = tasks.filter(
       (t) => isSameDay(new Date(t.dueDate), today) && t.status !== "abandoned"
     );
 
@@ -130,7 +131,7 @@ const HomeScreen = ({ navigation }) => {
     tmwDate.setDate(today.getDate() + 1);
     const tmw = tasks.filter((t) => isSameDay(new Date(t.dueDate), tmwDate) && t.status !== "abandoned");
 
-    setTasks(tdy);
+    setTasks(todayTasks);
     setTomorrowTasks(tmw);
 
     // ✅ Calcule et stocke le streak à partir de toutes les tâches
@@ -144,8 +145,11 @@ const HomeScreen = ({ navigation }) => {
       })
     );
 
-    // 🔥 ➔ Programmation de la notification
-    await scheduleDailyReminder(tmw);
+    const ok = await ensureNotificationPermission();
+
+    // 🔥 Reprogrammer la notification du lendemain
+    if(ok)
+      await scheduleDailyReminder(tmw);
   };
 
   const isSameDay = (d1, d2) => {
@@ -221,8 +225,7 @@ const HomeScreen = ({ navigation }) => {
 
   const loadStreak = async () => {
     // on recalcule le streak à partir de toutes les tâches stockées
-    const data = await AsyncStorage.getItem("tasks");
-    const allTasks = data ? JSON.parse(data) : [];
+    const allTasks = await getStoredTasks();
     const stats = computeStats(allTasks);
     setCurrentStreak(stats.currentStreak);
   };

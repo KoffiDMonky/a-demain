@@ -1,14 +1,14 @@
-import * as Notifications from 'expo-notifications';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from "expo-notifications";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 
-// Fonction pour annuler l'ancienne notification
-export async function cancelPreviousReminder() {
-  const storedId = await AsyncStorage.getItem('dailyReminderId');
-  if (storedId) {
-    await Notifications.cancelScheduledNotificationAsync(storedId);
-    await AsyncStorage.removeItem('dailyReminderId');
-  }
-}
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true, // affiche l'alerte en foreground
+    shouldPlaySound: true, // joue le son si défini
+    shouldSetBadge: false, // ne change pas l'icône de l'app
+  }),
+});
 
 // Fonction pour programmer une notification pour demain matin à 8h
 export async function scheduleDailyReminder(tasksForTomorrow = []) {
@@ -25,13 +25,28 @@ export async function scheduleDailyReminder(tasksForTomorrow = []) {
   );
 
   let body = "";
+  const visibleTasks = tasksForTomorrow.filter((t) => t.status !== "snoozed");
+  const snoozedTasks = tasksForTomorrow.filter((t) => t.status === "snoozed");
 
-  if (tasksForTomorrow && tasksForTomorrow.length > 0) {
-    const lines = tasksForTomorrow.slice(0, 5).map((t) => `• ${t.text}`);
+  if (visibleTasks.length > 0) {
+    const lines = visibleTasks.slice(0, 5).map((t) => `• ${t.text}`);
     body = ["Tes tâches du jour :", ...lines].join("\n");
 
-    if (tasksForTomorrow.length > 5) {
-      body += `\n...et ${tasksForTomorrow.length - 5} autres`;
+    if (visibleTasks.length > 5) {
+      body += `\n...et ${visibleTasks.length - 5} autres`;
+    }
+
+    if (snoozedTasks.length > 0) {
+      body += `\n(+ ${snoozedTasks.length} tâche${
+        snoozedTasks.length > 1 ? "s" : ""
+      } reportée${snoozedTasks.length > 1 ? "s" : ""})`;
+    }
+  } else if (snoozedTasks.length > 0) {
+    const lines = snoozedTasks.slice(0, 5).map((t) => `• ${t.text}`);
+    body = ["Tâches reportées à aujourd'hui :", ...lines].join("\n");
+
+    if (snoozedTasks.length > 5) {
+      body += `\n...et ${snoozedTasks.length - 5} autres`;
     }
   } else {
     body = "Tu n'as pas de tâches à faire aujourd'hui. Profite-en ! 🧠";
@@ -46,5 +61,29 @@ export async function scheduleDailyReminder(tasksForTomorrow = []) {
     trigger: tomorrow8h,
   });
 
-  await AsyncStorage.setItem('dailyReminderId', id);
+  await AsyncStorage.setItem("dailyReminderId", id);
+}
+
+// Fonction pour annuler l'ancienne notification
+export async function cancelPreviousReminder() {
+  const storedId = await AsyncStorage.getItem("dailyReminderId");
+  if (storedId) {
+    await Notifications.cancelScheduledNotificationAsync(storedId);
+    await AsyncStorage.removeItem("dailyReminderId");
+  }
+}
+
+export async function ensureNotificationPermission() {
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== "granted") {
+    const { status: newStatus } = await Notifications.requestPermissionsAsync();
+    if (newStatus !== "granted") {
+      Alert.alert(
+        "Notifications désactivées",
+        "Active-les dans les réglages pour recevoir tes rappels de tâches."
+      );
+      return false;
+    }
+  }
+  return true;
 }

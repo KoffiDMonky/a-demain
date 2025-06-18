@@ -15,26 +15,16 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import uuid from "react-native-uuid";
-import * as Notifications from "expo-notifications";
-// import { getNotificationTrigger } from "../utils/notification.js";
+import { getStoredTasks } from "../utils/storage";
 // import DateTimePicker from "@react-native-community/datetimepicker";
-
-// Configure le handler pour les notifications
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
 
 const NewTaskScreen = () => {
   const [text, setText] = useState("");
   const navigation = useNavigation();
-  const [enableReminder, setEnableReminder] = useState(false);
-  const [reminderTime, setReminderTime] = useState(
-    new Date(new Date().setHours(8, 0, 0, 0))
-  );
+  // const [enableReminder, setEnableReminder] = useState(false);
+  // const [reminderTime, setReminderTime] = useState(
+  //   new Date(new Date().setHours(8, 0, 0, 0))
+  // );
 
   const route = useRoute();
   const editingTask = route.params?.task;
@@ -42,22 +32,10 @@ const NewTaskScreen = () => {
   useEffect(() => {
     if (editingTask) {
       setText(editingTask.text);
-      setReminderTime(new Date(editingTask.dueDate));
-      setEnableReminder(!!editingTask.notificationId);
+      // setReminderTime(new Date(editingTask.dueDate));
+      // setEnableReminder(!!editingTask.notificationId);
     }
-    registerForPushNotificationsAsync();
   }, []);
-
-  // Demande les permissions de notifications
-  const registerForPushNotificationsAsync = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Erreur",
-        "Désolé, les permissions de notifications sont nécessaires!"
-      );
-    }
-  };
 
   const addTask = async () => {
     if (text.trim().length === 0) {
@@ -66,12 +44,11 @@ const NewTaskScreen = () => {
     }
 
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1); //
-    tomorrow.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(8, 0, 0, 0); // fixe à 8h
+    // tomorrow.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
 
-    const stored = await AsyncStorage.getItem("tasks");
-    const allTasks = stored ? JSON.parse(stored) : [];
-
+    const allTasks = await getStoredTasks();
     let updatedTasks;
 
     if (editingTask) {
@@ -80,8 +57,6 @@ const NewTaskScreen = () => {
           ? {
               ...t,
               text: text.trim(),
-              dueDate: editingTask.dueDate,
-              notificationId: null, // on peut la replanifier ensuite
             }
           : t
       );
@@ -93,10 +68,8 @@ const NewTaskScreen = () => {
         dueDate: tomorrow,
         status: "pending",
         snoozeCount: 0,
-        notificationId: null,
       };
       updatedTasks = [...allTasks, newTask];
-      if (enableReminder) await scheduleNotification(newTask);
     }
 
     await AsyncStorage.setItem("tasks", JSON.stringify(updatedTasks));
@@ -109,28 +82,28 @@ const NewTaskScreen = () => {
   };
 
   // Programme une notification avec un rappel à 8h00 demain matin
-  const scheduleNotification = async (task) => {
-    const timestamp = task.dueDate.getTime();
+  // const scheduleNotification = async (task) => {
+  //   const timestamp = task.dueDate.getTime();
 
-    if (timestamp <= Date.now() + 60_000) {
-      console.warn("⛔ La date de notification est trop proche ou passée");
-      return;
-    }
+  //   if (timestamp <= Date.now() + 60_000) {
+  //     console.warn("⛔ La date de notification est trop proche ou passée");
+  //     return;
+  //   }
 
-    const notificationId = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Rappel de tâche",
-        body: task.text,
-        sound: true,
-      },
-      trigger: {
-        type: "date",
-        timestamp,
-      },
-    });
+  //   const notificationId = await Notifications.scheduleNotificationAsync({
+  //     content: {
+  //       title: "Rappel de tâche",
+  //       body: task.text,
+  //       sound: true,
+  //     },
+  //     trigger: {
+  //       type: "date",
+  //       timestamp,
+  //     },
+  //   });
 
-    task.notificationId = notificationId;
-  };
+  //   task.notificationId = notificationId;
+  // };
 
   return (
     <KeyboardAvoidingView

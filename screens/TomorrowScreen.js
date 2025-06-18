@@ -15,8 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
 import TomorrowTaskItem from "../components/TomorrowTaskItem.js";
-import MaskedView from "@react-native-masked-view/masked-view";
-import { LinearGradient } from "expo-linear-gradient";
+import { scheduleDailyReminder,ensureNotificationPermission } from "../utils/notificationHelper.js";
 
 const TomorrowScreen = ({ navigation }) => {
   const [tomorrowTasks, setTomorrowTasks] = useState([]);
@@ -37,9 +36,6 @@ const TomorrowScreen = ({ navigation }) => {
         isSameDay(new Date(t.dueDate), tomorrow) && t.status !== "abandoned"
     );
     setTomorrowTasks(filtered);
-
-    // 🔥 Reprogrammer la notification du lendemain
-    await scheduleDailyReminder(filtered);
   };
 
   const isSameDay = (d1, d2) => {
@@ -65,9 +61,9 @@ const TomorrowScreen = ({ navigation }) => {
     const task = tasks.find((t) => t.id === taskId);
 
     // Si elle a une notification planifiée, on l’annule
-    if (task?.notificationId) {
-      await Notifications.cancelScheduledNotificationAsync(task.notificationId);
-    }
+    // if (task?.notificationId) {
+    //   await Notifications.cancelScheduledNotificationAsync(task.notificationId);
+    // }
 
     // Supprimer la tâche
     tasks = tasks.filter((t) => t.id !== taskId);
