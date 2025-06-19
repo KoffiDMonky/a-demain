@@ -118,6 +118,21 @@ const StatsScreen = ({ navigation }) => {
       "Demain est un nouveau départ ☀️",
       "Tu fais de ton mieux, et c’est déjà super 💪",
       "Une tâche à la fois 🧘‍♀️",
+      "Tu as le droit d’aller doucement 🐢",
+      "Ce que tu fais aujourd’hui compte 🧩",
+      "Tu n’as pas besoin d’être parfait, juste constant 🔄",
+      "Respire un bon coup, et continue 🌬️",
+      "La clarté vient en avançant 🔍",
+      "Tu es déjà en train de progresser 📈",
+      "Même les jours lents sont utiles ⏳",
+      "Fais confiance au processus 🌀",
+      "Tu es plus capable que tu ne le crois ✨",
+      "Un petit effort vaut mieux que rien 🪴",
+      "Le repos fait aussi partie du progrès 🛌",
+      "Chaque action est une victoire 🏆",
+      "Aujourd’hui est un bon jour pour recommencer 🔁",
+      "Sois fier de ce que tu fais, pas de ce qu’il reste à faire 🎯",
+      "Tu construis ton avenir, une case à la fois 📅",
     ];
     const index = Math.floor(Math.random() * messages.length);
     return messages[index];

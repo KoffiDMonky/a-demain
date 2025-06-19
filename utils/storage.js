@@ -1,5 +1,7 @@
 // utils/storage.js
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export const isSameDay = (d1, d2) =>
   d1.getFullYear() === d2.getFullYear() &&
   d1.getMonth() === d2.getMonth() &&
@@ -109,7 +111,8 @@ export const updateAndStoreStreaks = async (tasks, setStreakState) => {
 };
 
 
-const getStoredTasks = async () => {
+export const getStoredTasks = async () => {
   const data = await AsyncStorage.getItem("tasks");
+  console.log(data);
   return data ? JSON.parse(data) : [];
 };

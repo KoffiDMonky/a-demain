@@ -12,11 +12,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import './utils/notificationHelper';
 import { ensureNotificationPermission } from './utils/notificationHelper';
 
-import {
-  useFonts,
-  DancingScript_400Regular,
-  DancingScript_700Bold,
-} from '@expo-google-fonts/dancing-script';
+// import {
+//   useFonts,
+//   DancingScript_400Regular,
+//   DancingScript_700Bold,
+// } from '@expo-google-fonts/dancing-script';
 //import AppLoading from 'expo-app-loading'; // ou SplashScreen si tu utilises Expo SDK 50+
 
 
@@ -58,14 +58,14 @@ function RootTabs() {
 
 export default function App() {
 
-  let [fontsLoaded] = useFonts({
-    DancingScript_400Regular,
-    DancingScript_700Bold,
-  });
+  // let [fontsLoaded] = useFonts({
+  //   DancingScript_400Regular,
+  //   DancingScript_700Bold,
+  // });
   
-  if (!fontsLoaded) {
-    return null; 
-  }
+  // if (!fontsLoaded) {
+  //   return null; 
+  // }
 
   // useEffect(() => {
   //   // 1) Vérifier l’état actuel

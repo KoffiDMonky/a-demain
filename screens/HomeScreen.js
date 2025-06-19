@@ -423,7 +423,6 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 32,
     fontWeight: "bold",
-    //fontFamily: "DancingScript_700Bold",
     color: "#4CAF50",
     letterSpacing: 1,
   },

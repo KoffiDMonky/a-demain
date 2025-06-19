@@ -42,13 +42,13 @@ const NewTaskScreen = () => {
       Alert.alert("Oups", "Tu dois écrire quelque chose !");
       return;
     }
-
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(8, 0, 0, 0); // fixe à 8h
     // tomorrow.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
-
+    
     const allTasks = await getStoredTasks();
+
     let updatedTasks;
 
     if (editingTask) {
