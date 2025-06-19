@@ -32,6 +32,7 @@ const StatItem = ({ label, value }) => (
 );
 
 const StatsScreen = ({ navigation }) => {
+
   const [stats, setStats] = useState({
     totalTasks: 0,
     completedTasks: 0,

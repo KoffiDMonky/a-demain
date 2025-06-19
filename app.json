@@ -2,15 +2,15 @@
   "expo": {
     "name": "À Demain",
     "slug": "a-demain",
-    "version": "1.0.0",
+    "version": "1.0.9",
     "orientation": "portrait",
-    "icon": "./assets/Logo_A_demain_redandwhite.png",
+    "icon": "./assets/Logo_A_demain.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/Logo_A_demain_redandwhite.png",
+      "image": "./assets/Logo_A_demain.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FF2E54"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": true,
@@ -40,6 +40,14 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "infoPlist": {
+      "NSCalendarsUsageDescription": "L'application utilise votre calendrier uniquement pour planifier des rappels.",
+      "NSUserTrackingUsageDescription": "Cette app ne suit pas les utilisateurs. Aucune donnée n’est collectée."
+    },
+    "privacy": {
+      "privacyPolicyUrl": "https://ademain.agenorhouessou.fr/privacy",
+      "termsOfServiceUrl": "https://ademain.agenorhouessou.fr/terms"
+    }
   }
 }

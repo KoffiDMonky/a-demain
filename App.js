@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -8,9 +9,10 @@ import HomeScreen from "./screens/HomeScreen";
 import TomorrowScreen from "./screens/TomorrowScreen";
 import StatsScreen from "./screens/StatsScreen";
 import NewTaskScreen from "./screens/NewTaskScreen";
+import PrivacyPolicyScreen from "./screens/PrivacyPolicyScreen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import './utils/notificationHelper';
-import { ensureNotificationPermission } from './utils/notificationHelper';
+import "./utils/notificationHelper";
+import { ensureNotificationPermission } from "./utils/notificationHelper";
 
 // import {
 //   useFonts,
@@ -19,9 +21,9 @@ import { ensureNotificationPermission } from './utils/notificationHelper';
 // } from '@expo-google-fonts/dancing-script';
 //import AppLoading from 'expo-app-loading'; // ou SplashScreen si tu utilises Expo SDK 50+
 
-
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const isIOS = Platform.OS === "ios";
 
 // Stack pour l'ajout de tâche
 function RootTabs() {
@@ -37,6 +39,10 @@ function RootTabs() {
             iconName = focused ? "calendar" : "calendar-outline";
           else if (route.name === "Stats")
             iconName = focused ? "bar-chart" : "bar-chart-outline";
+          else if (route.name === "Confidentialité" & isIOS)
+            iconName = focused
+              ? "information-circle"
+              : "information-circle-outline";
           return (
             <Ionicons
               name={iconName}
@@ -52,19 +58,20 @@ function RootTabs() {
       <Tab.Screen name="Accueil" component={HomeScreen} />
       <Tab.Screen name="Demain" component={TomorrowScreen} />
       <Tab.Screen name="Stats" component={StatsScreen} />
+      {isIOS &&
+        <Tab.Screen name="Confidentialité" component={PrivacyPolicyScreen} />}
     </Tab.Navigator>
   );
 }
 
 export default function App() {
-
   // let [fontsLoaded] = useFonts({
   //   DancingScript_400Regular,
   //   DancingScript_700Bold,
   // });
-  
+
   // if (!fontsLoaded) {
-  //   return null; 
+  //   return null;
   // }
 
   // useEffect(() => {
@@ -90,7 +97,7 @@ export default function App() {
   useEffect(() => {
     ensureNotificationPermission();
   }, []);
-    
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
