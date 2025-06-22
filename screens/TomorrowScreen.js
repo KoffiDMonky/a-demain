@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
 import TomorrowTaskItem from "../components/TomorrowTaskItem.js";
 

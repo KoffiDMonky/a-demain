@@ -54,6 +54,7 @@ const StatsScreen = ({ navigation }) => {
   useEffect(() => {
     if (isFocused) {
       loadStats();
+      loadStreak();
     }
   }, [isFocused]);
 
@@ -112,6 +113,11 @@ const StatsScreen = ({ navigation }) => {
     );
   };
 
+  const loadStreak = async () => {
+    const data = await getStreakData();
+    setStreak(data.streak || 0);
+  };
+
   const getMotivationalMessage = () => {
     const messages = [
       "Tu avances, c’est l’essentiel 🌱",
@@ -137,22 +143,6 @@ const StatsScreen = ({ navigation }) => {
     ];
     const index = Math.floor(Math.random() * messages.length);
     return messages[index];
-  };
-
-  const logTasks = async () => {
-    const data = await AsyncStorage.getItem("tasks");
-    const tasks = data ? JSON.parse(data) : [];
-
-    console.log(
-      "📦 Tâches stockées :",
-      tasks.map((t) => ({
-        id: t.id,
-        text: t.text,
-        dueDate: t.dueDate,
-        status: t.status,
-        snoozeCount: t.snoozeCount,
-      }))
-    );
   };
 
   const handleClearTasks = async () => {

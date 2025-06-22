@@ -140,14 +140,6 @@ const HomeScreen = ({ navigation }) => {
       await scheduleDailyReminder(tmw);
   };
 
-  // const isSameDay = (d1, d2) => {
-  //   return (
-  //     d1.getDate() === d2.getDate() &&
-  //     d1.getMonth() === d2.getMonth() &&
-  //     d1.getFullYear() === d2.getFullYear()
-  //   );
-  // };
-
   const toggleTaskDone = async (task) => {
     const stored = await AsyncStorage.getItem("tasks");
     const allTasks = stored ? JSON.parse(stored) : [];
@@ -217,15 +209,6 @@ const HomeScreen = ({ navigation }) => {
     await scheduleDailyReminder(tasksForTomorrow);
 
     loadTasks();
-  };
-
-  const isToday = (date) => {
-    const now = new Date();
-    return (
-      date.getDate() === now.getDate() &&
-      date.getMonth() === now.getMonth() &&
-      date.getFullYear() === now.getFullYear()
-    );
   };
 
   const tomorrow = () => {

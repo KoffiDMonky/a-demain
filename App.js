@@ -39,7 +39,7 @@ function RootTabs() {
             iconName = focused ? "calendar" : "calendar-outline";
           else if (route.name === "Stats")
             iconName = focused ? "bar-chart" : "bar-chart-outline";
-          else if (route.name === "Confidentialité" & isIOS)
+          else if (route.name === "Confidentialité" && isIOS)
             iconName = focused
               ? "information-circle"
               : "information-circle-outline";

@@ -112,7 +112,6 @@ export const updateAndStoreStreaks = async (tasks, setStreakState) => {
 
 export const getStoredTasks = async () => {
   const data = await AsyncStorage.getItem("tasks");
-  console.log(data);
   return data ? JSON.parse(data) : [];
 };
 
