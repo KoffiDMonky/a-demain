@@ -19,7 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import TaskItem from "./../components/TaskItem.js";
 import LottieView from "lottie-react-native";
-import { computeStats, getStoredTasks } from "../utils/storage";
+import { computeStats, getStoredTasks, isSameDay, abandonOutdatedTasks } from "../utils/storage";
 import { syncStreak } from "../utils/streak";
 import { scheduleDailyReminder, ensureNotificationPermission } from "./../utils/notificationHelper.js";
 
@@ -108,18 +108,6 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    injectTutorialTasks(loadTasks);
-  }, []);
-
-  useEffect(() => {
-    loadStreak();
-    if (isFocused) {
-      loadTasks();
-      loadStreak();
-    }
-  }, [isFocused]);
-
   const loadTasks = async () => {
     const tasks = await getStoredTasks();
     const today = new Date();
@@ -152,13 +140,13 @@ const HomeScreen = ({ navigation }) => {
       await scheduleDailyReminder(tmw);
   };
 
-  const isSameDay = (d1, d2) => {
-    return (
-      d1.getDate() === d2.getDate() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getFullYear() === d2.getFullYear()
-    );
-  };
+  // const isSameDay = (d1, d2) => {
+  //   return (
+  //     d1.getDate() === d2.getDate() &&
+  //     d1.getMonth() === d2.getMonth() &&
+  //     d1.getFullYear() === d2.getFullYear()
+  //   );
+  // };
 
   const toggleTaskDone = async (task) => {
     const stored = await AsyncStorage.getItem("tasks");
@@ -193,13 +181,41 @@ const HomeScreen = ({ navigation }) => {
     );
     await AsyncStorage.setItem("tasks", JSON.stringify(updated));
     loadTasks();
+
+    // ✅ Si la tâche est snoozée, reprogrammer la notif du lendemain
+    if (status === "snoozed") {
+      const newAllTasks = await getStoredTasks();
+      const tomorrowDate = tomorrow();
+
+      const tasksForTomorrow = newAllTasks.filter(
+        (t) =>
+          t.dueDate && isSameDay(new Date(t.dueDate), tomorrowDate) &&
+          t.status !== "abandoned"
+      );
+
+      await scheduleDailyReminder(tasksForTomorrow);
+    }
   };
 
   const deleteTask = async (id) => {
     const stored = await AsyncStorage.getItem("tasks");
-    const allTasks = stored ? JSON.parse(stored) : [];
+    let allTasks = stored ? JSON.parse(stored) : [];
     const filtered = allTasks.filter((t) => t.id !== id);
     await AsyncStorage.setItem("tasks", JSON.stringify(filtered));
+
+    // Reprogrammer la notification du lendemain
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const tasksForTomorrow = filtered.filter(
+      (t) =>
+        t.dueDate &&
+        isSameDay(new Date(t.dueDate), tomorrow) &&
+        t.status !== "abandoned"
+    );
+
+    await scheduleDailyReminder(tasksForTomorrow);
+
     loadTasks();
   };
 
@@ -254,6 +270,18 @@ const HomeScreen = ({ navigation }) => {
   );
 
   useEffect(() => {
+    injectTutorialTasks(loadTasks);
+  }, []);
+
+  useEffect(() => {
+    loadStreak();
+    if (isFocused) {
+      loadTasks();
+      loadStreak();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
     const todayTasks = tasks.filter(t => {
       const d = new Date(t.dueDate);
       const now = new Date();
@@ -265,6 +293,15 @@ const HomeScreen = ({ navigation }) => {
     });
     syncStreak(todayTasks).then(setStreak);
   }, [tasks]);
+
+  useEffect(() => {
+    const init = async () => {
+      await abandonOutdatedTasks();
+      await loadTasks();
+    };
+  
+    init();
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -289,7 +326,6 @@ const HomeScreen = ({ navigation }) => {
     }
   }, [allTasksDone]);
   
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>

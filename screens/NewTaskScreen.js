@@ -15,7 +15,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import uuid from "react-native-uuid";
-import { getStoredTasks } from "../utils/storage";
+import { getStoredTasks, isSameDay } from "../utils/storage";
+import { scheduleDailyReminder } from "../utils/notificationHelper";
 // import DateTimePicker from "@react-native-community/datetimepicker";
 
 const NewTaskScreen = () => {
@@ -29,13 +30,7 @@ const NewTaskScreen = () => {
   const route = useRoute();
   const editingTask = route.params?.task;
 
-  useEffect(() => {
-    if (editingTask) {
-      setText(editingTask.text);
-      // setReminderTime(new Date(editingTask.dueDate));
-      // setEnableReminder(!!editingTask.notificationId);
-    }
-  }, []);
+
 
   const addTask = async () => {
     if (text.trim().length === 0) {
@@ -47,7 +42,7 @@ const NewTaskScreen = () => {
     tomorrow.setHours(8, 0, 0, 0); // fixe à 8h
     // tomorrow.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
     
-    const allTasks = await getStoredTasks();
+    let allTasks = await getStoredTasks();
 
     let updatedTasks;
 
@@ -73,6 +68,15 @@ const NewTaskScreen = () => {
     }
 
     await AsyncStorage.setItem("tasks", JSON.stringify(updatedTasks));
+
+        // après avoir mis à jour les tâches
+    allTasks = await getStoredTasks();
+
+    const tasksForTomorrow = allTasks.filter((t) =>
+      isSameDay(new Date(t.dueDate), tomorrow) && t.status !== "abandoned"
+    );
+
+    await scheduleDailyReminder(tasksForTomorrow);
 
     if (editingTask) {
       navigation.goBack();
@@ -104,6 +108,14 @@ const NewTaskScreen = () => {
 
   //   task.notificationId = notificationId;
   // };
+
+    useEffect(() => {
+    if (editingTask) {
+      setText(editingTask.text);
+      // setReminderTime(new Date(editingTask.dueDate));
+      // setEnableReminder(!!editingTask.notificationId);
+    }
+  }, []);
 
   return (
     <KeyboardAvoidingView

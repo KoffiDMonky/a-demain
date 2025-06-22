@@ -110,9 +110,27 @@ export const updateAndStoreStreaks = async (tasks, setStreakState) => {
   if (setStreakState) setStreakState(stats.currentStreak);
 };
 
-
 export const getStoredTasks = async () => {
   const data = await AsyncStorage.getItem("tasks");
   console.log(data);
   return data ? JSON.parse(data) : [];
 };
+
+export const abandonOutdatedTasks = async () => {
+  const data = await AsyncStorage.getItem("tasks");
+  const tasks = data ? JSON.parse(data) : [];
+
+  const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
+
+  const updated = tasks.map((t) => {
+    const dueStr = new Date(t.dueDate).toISOString().split("T")[0];
+    if (dueStr < todayStr && t.status === "pending") {
+      return { ...t, status: "abandoned" };
+    }
+    return t;
+  });
+
+  await AsyncStorage.setItem("tasks", JSON.stringify(updated));
+};
+
