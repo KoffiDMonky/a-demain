@@ -12,19 +12,37 @@ Notifications.setNotificationHandler({
 // Programme une notification locale pour une tâche
 export async function scheduleTaskNotification(task) {
   if (!task?.dueDate) return null;
-  const timestamp = new Date(task.dueDate).getTime();
-  if (timestamp <= Date.now()) {
-    return null; // On ne planifie pas dans le passé
+
+  const triggerDate = new Date(task.dueDate);
+  const now = Date.now();
+
+  if (triggerDate.getTime() <= now + 60_000) {
+    console.warn("⛔ Notification trop proche ou passée");
+    return null;
   }
 
-  return await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "N'oublie pas \uD83D\uDC40",
-      body: task.text,
-      sound: "default",
-    },
-    trigger: { type: "date", timestamp },
-  });
+  console.log(
+    "Scheduling notif pour :",
+    triggerDate.toLocaleString(),
+    "(now =", new Date().toLocaleString(), ")"
+  );
+
+  try {
+    return await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "N'oublie pas 👀",
+        body: task.text,
+        sound: "default",
+      },
+      trigger: {
+        type: "date",
+        date: triggerDate,
+      },
+    });
+  } catch (err) {
+    console.error("Erreur scheduleNotif:", err);
+    return null;
+  }
 }
 
 // Annule une notification planifiée

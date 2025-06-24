@@ -76,6 +76,7 @@ const NewTaskScreen = () => {
         }
         const id = await scheduleTaskNotification(taskToSave);
         taskToSave.notificationId = id;
+
       }
     } else if (taskToSave.notificationId) {
       await cancelTaskNotification(taskToSave.notificationId);
@@ -90,30 +91,6 @@ const NewTaskScreen = () => {
       navigation.navigate("Retour", { screen: "Demain" });
     }
   };
-
-  // Programme une notification avec un rappel à 8h00 demain matin
-  // const scheduleNotification = async (task) => {
-  //   const timestamp = task.dueDate.getTime();
-
-  //   if (timestamp <= Date.now() + 60_000) {
-  //     console.warn("⛔ La date de notification est trop proche ou passée");
-  //     return;
-  //   }
-
-  //   const notificationId = await Notifications.scheduleNotificationAsync({
-  //     content: {
-  //       title: "Rappel de tâche",
-  //       body: task.text,
-  //       sound: true,
-  //     },
-  //     trigger: {
-  //       type: "date",
-  //       timestamp,
-  //     },
-  //   });
-
-  //   task.notificationId = notificationId;
-  // };
 
   useEffect(() => {
     if (editingTask) {
