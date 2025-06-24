@@ -19,9 +19,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import TaskItem from "./../components/TaskItem.js";
 import LottieView from "lottie-react-native";
-import { computeStats, getStoredTasks, isSameDay, abandonOutdatedTasks } from "../utils/storage";
+import {
+  computeStats,
+  getStoredTasks,
+  isSameDay,
+  abandonOutdatedTasks,
+} from "../utils/storage";
 import { syncStreak } from "../utils/streak";
-import { scheduleDailyReminder, ensureNotificationPermission } from "./../utils/notificationHelper.js";
+import {
+  scheduleTaskNotification,
+  cancelTaskNotification,
+  ensureNotificationPermission,
+} from "./../utils/notificationHelper.js";
 
 const HomeScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
@@ -117,7 +126,9 @@ const HomeScreen = ({ navigation }) => {
 
     const tmwDate = new Date();
     tmwDate.setDate(today.getDate() + 1);
-    const tmw = tasks.filter((t) => isSameDay(new Date(t.dueDate), tmwDate) && t.status !== "abandoned");
+    const tmw = tasks.filter(
+      (t) => isSameDay(new Date(t.dueDate), tmwDate) && t.status !== "abandoned"
+    );
 
     setTasks(todayTasks);
     setTomorrowTasks(tmw);
@@ -133,11 +144,7 @@ const HomeScreen = ({ navigation }) => {
       })
     );
 
-    const ok = await ensureNotificationPermission();
-
-    // 🔥 Reprogrammer la notification du lendemain
-    if(ok)
-      await scheduleDailyReminder(tmw);
+    await ensureNotificationPermission();
   };
 
   const toggleTaskDone = async (task) => {
@@ -159,54 +166,48 @@ const HomeScreen = ({ navigation }) => {
 
   const updateTaskStatus = async (id, status) => {
     const stored = await AsyncStorage.getItem("tasks");
-    const allTasks = stored ? JSON.parse(stored) : [];
-    const updated = allTasks.map((t) =>
-      t.id === id
-        ? {
-            ...t,
-            status,
-            snoozeCount:
-              status === "snoozed" ? t.snoozeCount + 1 : t.snoozeCount,
-            dueDate: status === "snoozed" ? tomorrow() : t.dueDate,
-          }
-        : t
-    );
-    await AsyncStorage.setItem("tasks", JSON.stringify(updated));
-    loadTasks();
+    let allTasks = stored ? JSON.parse(stored) : [];
+    let target = allTasks.find((t) => t.id === id);
+    if (!target) return;
 
-    // ✅ Si la tâche est snoozée, reprogrammer la notif du lendemain
     if (status === "snoozed") {
-      const newAllTasks = await getStoredTasks();
-      const tomorrowDate = tomorrow();
+      const newDate = tomorrow();
+      const old = new Date(target.dueDate);
+      newDate.setHours(old.getHours(), old.getMinutes(), 0, 0);
 
-      const tasksForTomorrow = newAllTasks.filter(
-        (t) =>
-          t.dueDate && isSameDay(new Date(t.dueDate), tomorrowDate) &&
-          t.status !== "abandoned"
-      );
+      if (target.notificationId) {
+        await cancelTaskNotification(target.notificationId);
+        const idNotif = await scheduleTaskNotification({
+          text: target.text,
+          dueDate: newDate,
+        });
+        target.notificationId = idNotif;
+      }
 
-      await scheduleDailyReminder(tasksForTomorrow);
+      target = {
+        ...target,
+        status,
+        snoozeCount: target.snoozeCount + 1,
+        dueDate: newDate,
+      };
+    } else {
+      target = { ...target, status };
     }
+
+    allTasks = allTasks.map((t) => (t.id === id ? target : t));
+    await AsyncStorage.setItem("tasks", JSON.stringify(allTasks));
+    loadTasks();
   };
 
   const deleteTask = async (id) => {
     const stored = await AsyncStorage.getItem("tasks");
     let allTasks = stored ? JSON.parse(stored) : [];
+    const task = allTasks.find((t) => t.id === id);
+    if (task?.notificationId) {
+      await cancelTaskNotification(task.notificationId);
+    }
     const filtered = allTasks.filter((t) => t.id !== id);
     await AsyncStorage.setItem("tasks", JSON.stringify(filtered));
-
-    // Reprogrammer la notification du lendemain
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const tasksForTomorrow = filtered.filter(
-      (t) =>
-        t.dueDate &&
-        isSameDay(new Date(t.dueDate), tomorrow) &&
-        t.status !== "abandoned"
-    );
-
-    await scheduleDailyReminder(tasksForTomorrow);
 
     loadTasks();
   };
@@ -265,7 +266,7 @@ const HomeScreen = ({ navigation }) => {
   }, [isFocused]);
 
   useEffect(() => {
-    const todayTasks = tasks.filter(t => {
+    const todayTasks = tasks.filter((t) => {
       const d = new Date(t.dueDate);
       const now = new Date();
       return (
@@ -282,13 +283,13 @@ const HomeScreen = ({ navigation }) => {
       await abandonOutdatedTasks();
       await loadTasks();
     };
-  
+
     init();
   }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
+      headerRight: () =>
         streak > 0 && (
           <View style={styles.flameContainer}>
             <Image
@@ -298,8 +299,7 @@ const HomeScreen = ({ navigation }) => {
             />
             <Text style={styles.flameText}>{streak}</Text>
           </View>
-        )
-      ),
+        ),
     });
   }, [navigation, streak]);
 
@@ -308,7 +308,7 @@ const HomeScreen = ({ navigation }) => {
       setAnimationDone(false);
     }
   }, [allTasksDone]);
-  
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>

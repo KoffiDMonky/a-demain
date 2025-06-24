@@ -15,17 +15,21 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import uuid from "react-native-uuid";
-import { getStoredTasks, isSameDay } from "../utils/storage";
-import { scheduleDailyReminder } from "../utils/notificationHelper";
-// import DateTimePicker from "@react-native-community/datetimepicker";
+import { getStoredTasks } from "../utils/storage";
+import {
+  scheduleTaskNotification,
+  cancelTaskNotification,
+  ensureNotificationPermission,
+} from "../utils/notificationHelper";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const NewTaskScreen = () => {
   const [text, setText] = useState("");
   const navigation = useNavigation();
-  // const [enableReminder, setEnableReminder] = useState(false);
-  // const [reminderTime, setReminderTime] = useState(
-  //   new Date(new Date().setHours(8, 0, 0, 0))
-  // );
+  const [enableReminder, setEnableReminder] = useState(false);
+  const [reminderTime, setReminderTime] = useState(
+    new Date(new Date().setHours(8, 0, 0, 0))
+  );
 
   const route = useRoute();
   const editingTask = route.params?.task;
@@ -38,45 +42,47 @@ const NewTaskScreen = () => {
       return;
     }
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(8, 0, 0, 0); // fixe à 8h
-    // tomorrow.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
-    
-    let allTasks = await getStoredTasks();
+    tomorrow.setDate(tomorrow.getDate() + 1);    
+    tomorrow.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
 
-    let updatedTasks;
+    let allTasks = await getStoredTasks();
+    let taskToSave;
 
     if (editingTask) {
-      updatedTasks = allTasks.map((t) =>
+      allTasks = allTasks.map((t) =>
         t.id === editingTask.id
-          ? {
-              ...t,
-              text: text.trim(),
-            }
-          : t
+      ? { ...t, text: text.trim(), dueDate: tomorrow }
+      : t
       );
+      taskToSave = allTasks.find((t) => t.id === editingTask.id);
     } else {
-      const newTask = {
+      taskToSave = {
         id: uuid.v4(),
         text: text.trim(),
         createdAt: new Date(),
         dueDate: tomorrow,
         status: "pending",
         snoozeCount: 0,
+        notificationId: null,
       };
-      updatedTasks = [...allTasks, newTask];
+      allTasks.push(taskToSave);
     }
 
-    await AsyncStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    if (enableReminder) {
+      const ok = await ensureNotificationPermission();
+      if (ok) {
+        if (taskToSave.notificationId) {
+          await cancelTaskNotification(taskToSave.notificationId);
+        }
+        const id = await scheduleTaskNotification(taskToSave);
+        taskToSave.notificationId = id;
+      }
+    } else if (taskToSave.notificationId) {
+      await cancelTaskNotification(taskToSave.notificationId);
+      taskToSave.notificationId = null;
+    }
 
-        // après avoir mis à jour les tâches
-    allTasks = await getStoredTasks();
-
-    const tasksForTomorrow = allTasks.filter((t) =>
-      isSameDay(new Date(t.dueDate), tomorrow) && t.status !== "abandoned"
-    );
-
-    await scheduleDailyReminder(tasksForTomorrow);
+    await AsyncStorage.setItem("tasks", JSON.stringify(allTasks));
 
     if (editingTask) {
       navigation.goBack();
@@ -109,12 +115,11 @@ const NewTaskScreen = () => {
   //   task.notificationId = notificationId;
   // };
 
-    useEffect(() => {
+  useEffect(() => {
     if (editingTask) {
       setText(editingTask.text);
-      // setReminderTime(new Date(editingTask.dueDate));
-      // setEnableReminder(!!editingTask.notificationId);
-    }
+      setReminderTime(new Date(editingTask.dueDate));
+      setEnableReminder(!!editingTask.notificationId);    }
   }, []);
 
   return (
@@ -132,12 +137,14 @@ const NewTaskScreen = () => {
             onChangeText={setText}
             multiline
           />
-          {/* <View style={styles.reminderRow}>
+          <View style={styles.reminderRow}>
             <Text style={styles.label}>Activer un rappel</Text>
             <Switch
               value={enableReminder}
               onValueChange={setEnableReminder}
               thumbColor={enableReminder ? "#FF2E54" : "#ccc"}
+              trackColor={{ false: "#ddd", true: "#FFCDD2" }} 
+              ios_backgroundColor="#ccc"
             />
           </View>
 
@@ -153,7 +160,7 @@ const NewTaskScreen = () => {
                 }}
               />
             </>
-          )} */}
+          )}
 
           <TouchableOpacity style={styles.button} onPress={addTask}>
             <Text style={styles.buttonText}>
@@ -193,4 +200,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonText: { color: "white", textAlign: "center", fontWeight: "bold" },
+  reminderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  timeButtonText: {
+    marginTop: 10,
+    marginBottom: 10,
+    fontSize: 16,
+  },
 });

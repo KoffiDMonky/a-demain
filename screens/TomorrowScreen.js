@@ -14,6 +14,7 @@ import { useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import TomorrowTaskItem from "../components/TomorrowTaskItem.js";
+import { cancelTaskNotification } from "../utils/notificationHelper";
 
 const TomorrowScreen = ({ navigation }) => {
   const [tomorrowTasks, setTomorrowTasks] = useState([]);
@@ -55,13 +56,11 @@ const TomorrowScreen = ({ navigation }) => {
     const stored = await AsyncStorage.getItem("tasks");
     let tasks = stored ? JSON.parse(stored) : [];
 
-    // Retrouver la tâche
     const task = tasks.find((t) => t.id === taskId);
 
-    // Si elle a une notification planifiée, on l’annule
-    // if (task?.notificationId) {
-    //   await Notifications.cancelScheduledNotificationAsync(task.notificationId);
-    // }
+    if (task?.notificationId) {
+      await cancelTaskNotification(task.notificationId);
+    }
 
     // Supprimer la tâche
     tasks = tasks.filter((t) => t.id !== taskId);
