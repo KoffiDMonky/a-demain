@@ -22,6 +22,7 @@ import {
   ensureNotificationPermission,
 } from "../utils/notificationHelper";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import TimePicker from "./../components/TimePicker";
 
 const NewTaskScreen = () => {
   const [text, setText] = useState("");
@@ -34,15 +35,13 @@ const NewTaskScreen = () => {
   const route = useRoute();
   const editingTask = route.params?.task;
 
-
-
   const addTask = async () => {
     if (text.trim().length === 0) {
       Alert.alert("Oups", "Tu dois écrire quelque chose !");
       return;
     }
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);    
+    tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
 
     let allTasks = await getStoredTasks();
@@ -51,8 +50,8 @@ const NewTaskScreen = () => {
     if (editingTask) {
       allTasks = allTasks.map((t) =>
         t.id === editingTask.id
-      ? { ...t, text: text.trim(), dueDate: tomorrow }
-      : t
+          ? { ...t, text: text.trim(), dueDate: tomorrow }
+          : t
       );
       taskToSave = allTasks.find((t) => t.id === editingTask.id);
     } else {
@@ -76,7 +75,6 @@ const NewTaskScreen = () => {
         }
         const id = await scheduleTaskNotification(taskToSave);
         taskToSave.notificationId = id;
-
       }
     } else if (taskToSave.notificationId) {
       await cancelTaskNotification(taskToSave.notificationId);
@@ -96,7 +94,8 @@ const NewTaskScreen = () => {
     if (editingTask) {
       setText(editingTask.text);
       setReminderTime(new Date(editingTask.dueDate));
-      setEnableReminder(!!editingTask.notificationId);    }
+      setEnableReminder(!!editingTask.notificationId);
+    }
   }, []);
 
   return (
@@ -106,7 +105,9 @@ const NewTaskScreen = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          <Text style={styles.label}>{editingTask ? "Que dois-tu faire ?" : "Que veux-tu faire demain ?"}</Text>
+          <Text style={styles.label}>
+            {editingTask ? "Que dois-tu faire ?" : "Que veux-tu faire demain ?"}
+          </Text>
           <TextInput
             style={styles.input}
             placeholder="Ex: Appeler Mamie, ranger le bureau..."
@@ -120,18 +121,15 @@ const NewTaskScreen = () => {
               value={enableReminder}
               onValueChange={setEnableReminder}
               thumbColor={enableReminder ? "#FF2E54" : "#ccc"}
-              trackColor={{ false: "#ddd", true: "#FFCDD2" }} 
+              trackColor={{ false: "#ddd", true: "#FFCDD2" }}
               ios_backgroundColor="#ccc"
             />
           </View>
 
           {enableReminder && (
             <>
-              <Text style={styles.timeButtonText}>⏰ Heure du rappel :</Text>
-              <DateTimePicker
+              <TimePicker
                 value={reminderTime}
-                mode="time"
-                display="default"
                 onChange={(event, selectedDate) => {
                   if (selectedDate) setReminderTime(selectedDate);
                 }}
@@ -158,7 +156,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
     //justifyContent: "center",
-   //backgroundColor: 'red'
+    //backgroundColor: 'red'
   },
   label: { fontSize: 20, marginBottom: 15 },
   input: {

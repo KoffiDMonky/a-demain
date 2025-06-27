@@ -21,12 +21,6 @@ export async function scheduleTaskNotification(task) {
     return null;
   }
 
-  console.log(
-    "Scheduling notif pour :",
-    triggerDate.toLocaleString(),
-    "(now =", new Date().toLocaleString(), ")"
-  );
-
   try {
     return await Notifications.scheduleNotificationAsync({
       content: {

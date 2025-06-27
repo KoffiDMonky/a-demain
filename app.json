@@ -2,7 +2,7 @@
   "expo": {
     "name": "À Demain",
     "slug": "a-demain",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "orientation": "portrait",
     "icon": "./assets/Logo_A_demain.png",
     "userInterfaceStyle": "light",
