@@ -14,7 +14,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.agenorhouessou.ademain"
+      "bundleIdentifier": "com.agenorhouessou.ademain",
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "L'application utilise votre calendrier uniquement pour planifier des rappels.",
+        "NSUserTrackingUsageDescription": "Cette app ne suit pas les utilisateurs. Aucune donnée n'est collectée."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -39,15 +43,16 @@
       "url": "https://u.expo.dev/c262e53f-d293-4e81-b54f-e44fd09463c0"
     },
     "plugins": [
-      "expo-font"
-    ],
-    "infoPlist": {
-      "NSCalendarsUsageDescription": "L'application utilise votre calendrier uniquement pour planifier des rappels.",
-      "NSUserTrackingUsageDescription": "Cette app ne suit pas les utilisateurs. Aucune donnée n’est collectée."
-    },
-    "privacy": {
-      "privacyPolicyUrl": "https://ademain.agenorhouessou.fr/privacy",
-      "termsOfServiceUrl": "https://ademain.agenorhouessou.fr/terms"
-    }
+      "expo-font",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "targetSdkVersion": 36
+          }
+        }
+      ]
+    ]
   }
 }
