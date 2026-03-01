@@ -6,12 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Platform,
   StatusBar,
   Easing,
   Animated,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import MaskedView from "@react-native-masked-view/masked-view";

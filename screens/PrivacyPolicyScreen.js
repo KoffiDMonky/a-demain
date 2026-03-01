@@ -4,11 +4,11 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   Platform,
   StatusBar,
   Linking,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const PrivacyPolicyScreen = () => {
   const openURL = (url) => {
