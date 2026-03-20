@@ -25,12 +25,17 @@ import {
   isSameDay,
   abandonOutdatedTasks,
 } from "../utils/storage";
+import { buildTasksAfterStatusChange } from "../utils/applyHomeTaskStatus";
 import { syncStreak } from "../utils/streak";
 import {
   scheduleTaskNotification,
   cancelTaskNotification,
   ensureNotificationPermission,
 } from "./../utils/notificationHelper.js";
+import {
+  recordTaskCompletedOnce,
+  recordSnoozeOnce,
+} from "../utils/achievements";
 
 const HomeScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
@@ -43,9 +48,13 @@ const HomeScreen = ({ navigation }) => {
 
   const injectTutorialTasks = async (onInjected) => {
     const existing = await AsyncStorage.getItem("tasks");
-    if (existing) {
+    // Clé absente → première ouverture : injecter le tutoriel.
+    // Tableau vide explicite → ne pas réinjecter (liste vide volontaire).
+    if (existing !== null) {
       const parsed = JSON.parse(existing);
-      if (parsed.length > 0) return;
+      if (Array.isArray(parsed)) {
+        return;
+      }
     }
 
     const now = new Date();
@@ -159,6 +168,10 @@ const HomeScreen = ({ navigation }) => {
       return t;
     });
 
+    if (task.status === "pending") {
+      await recordTaskCompletedOnce();
+    }
+
     await AsyncStorage.setItem("tasks", JSON.stringify(updated));
     loadTasks(); // 🔁 ça recharge tout + met à jour le streak
     loadStreak();
@@ -166,36 +179,21 @@ const HomeScreen = ({ navigation }) => {
 
   const updateTaskStatus = async (id, status) => {
     const stored = await AsyncStorage.getItem("tasks");
-    let allTasks = stored ? JSON.parse(stored) : [];
-    let target = allTasks.find((t) => t.id === id);
-    if (!target) return;
+    const allTasks = stored ? JSON.parse(stored) : [];
+    const nextTasks = await buildTasksAfterStatusChange({
+      allTasks,
+      id,
+      status,
+      tomorrow,
+      cancelTaskNotification,
+      scheduleTaskNotification,
+    });
+    if (!nextTasks) return;
 
+    await AsyncStorage.setItem("tasks", JSON.stringify(nextTasks));
     if (status === "snoozed") {
-      const newDate = tomorrow();
-      const old = new Date(target.dueDate);
-      newDate.setHours(old.getHours(), old.getMinutes(), 0, 0);
-
-      if (target.notificationId) {
-        await cancelTaskNotification(target.notificationId);
-        const idNotif = await scheduleTaskNotification({
-          text: target.text,
-          dueDate: newDate,
-        });
-        target.notificationId = idNotif;
-      }
-
-      target = {
-        ...target,
-        status,
-        snoozeCount: target.snoozeCount + 1,
-        dueDate: newDate,
-      };
-    } else {
-      target = { ...target, status };
+      await recordSnoozeOnce();
     }
-
-    allTasks = allTasks.map((t) => (t.id === id ? target : t));
-    await AsyncStorage.setItem("tasks", JSON.stringify(allTasks));
     loadTasks();
   };
 

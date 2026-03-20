@@ -23,10 +23,39 @@ describe("StatsScreen", () => {
     expect(screen.getByText("Statistiques")).toBeOnTheScreen();
   });
 
-  it("affiche la section Tâches du jour", async () => {
+  it("affiche la section Succès avec des badges", async () => {
+    render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
+    await screen.findByText("Succès");
+    expect(screen.getByText("Succès")).toBeOnTheScreen();
+    await screen.findByText("Premier pas");
+    expect(screen.getByText("Premier pas")).toBeOnTheScreen();
+  });
+
+  it("affiche la section Tâches du jour quand il y a des tâches prévues aujourd’hui", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "1",
+          text: "Aujourd’hui",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+        },
+      ])
+    );
+
     render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
     await screen.findByText(/Tâches du jour :/);
-    expect(screen.getByText(/Tâches du jour :/)).toBeOnTheScreen();
+    expect(screen.getByText(/Tâches du jour : 0\/1/)).toBeOnTheScreen();
+  });
+
+  it("n’affiche pas la section Tâches du jour sans tâche prévue aujourd’hui", async () => {
+    render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
+    await screen.findByText("Statistiques");
+    expect(screen.queryByText(/Tâches du jour :/)).toBeNull();
   });
 
   it("affiche les libellés des stats (Tâches créées, Série en cours)", async () => {

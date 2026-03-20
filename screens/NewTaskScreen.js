@@ -21,6 +21,7 @@ import {
   cancelTaskNotification,
   ensureNotificationPermission,
 } from "../utils/notificationHelper";
+import { markTomorrowTaskPlanned } from "../utils/achievements";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import TimePicker from "./../components/TimePicker";
 
@@ -82,6 +83,7 @@ const NewTaskScreen = () => {
     }
 
     await AsyncStorage.setItem("tasks", JSON.stringify(allTasks));
+    await markTomorrowTaskPlanned();
 
     if (editingTask) {
       navigation.goBack();

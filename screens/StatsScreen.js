@@ -9,15 +9,20 @@ import {
   Easing,
   Platform,
   StatusBar,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { computeStats } from "../utils/storage";
 import { getStreakData } from "../utils/streak";
+import {
+  getAchievementMeta,
+  buildAchievementContext,
+  syncAchievementsWithContext,
+} from "../utils/achievements";
 
 const StatItem = ({ label, value }) => (
   <LinearGradient
@@ -45,6 +50,7 @@ const StatsScreen = ({ navigation }) => {
   });
 
   const [streak, setStreak] = useState(0);
+  const [achievements, setAchievements] = useState([]);
 
   const isFocused = useIsFocused();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -54,29 +60,33 @@ const StatsScreen = ({ navigation }) => {
   useEffect(() => {
     if (isFocused) {
       loadStats();
-      loadStreak();
     }
   }, [isFocused]);
 
   // Animation de la barre de progression
   useEffect(() => {
-    const percentage = (stats.todayDone / (stats.todayTotal || 1)) * 100;
-    Animated.timing(progressAnim, {
+    const percentage =
+      stats.todayTotal > 0 ? (stats.todayDone / stats.todayTotal) * 100 : 0;
+    const animation = Animated.timing(progressAnim, {
       toValue: percentage,
       duration: 700,
       easing: Easing.out(Easing.ease),
       useNativeDriver: false,
-    }).start();
+    });
+    animation.start();
+    return () => animation.stop();
   }, [stats.todayDone, stats.todayTotal]);
 
   // Après le chargement, animation d'apparition des blocs
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       easing: Easing.out(Easing.exp),
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
+    return () => animation.stop();
   }, [stats]);
 
   const loadStats = async () => {
@@ -111,11 +121,21 @@ const StatsScreen = ({ navigation }) => {
         bestStreak: computed.bestStreak,
       })
     );
-  };
 
-  const loadStreak = async () => {
-    const data = await getStreakData();
-    setStreak(data.streak || 0);
+    const streakData = await getStreakData();
+    setStreak(streakData.streak || 0);
+
+    const meta = await getAchievementMeta();
+    const ctx = buildAchievementContext({
+      tasks,
+      computedStats: computed,
+      streakUi: streakData.streak || 0,
+      meta,
+      todayTotal: todayTasks.length,
+      todayDone,
+    });
+    const badgeList = await syncAchievementsWithContext(ctx);
+    setAchievements(badgeList);
   };
 
   const getMotivationalMessage = () => {
@@ -147,6 +167,11 @@ const StatsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
@@ -181,31 +206,33 @@ const StatsScreen = ({ navigation }) => {
 
         <Text style={styles.title}>Statistiques</Text>
 
-        <View style={styles.progressContainer}>
-          <Text style={styles.progressLabel}>
-            Tâches du jour : {stats.todayDone}/{stats.todayTotal}
-          </Text>
-          <View style={styles.progressBarBackground}>
-            <Animated.View
-              style={[
-                styles.progressBarFill,
-                {
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: ["0%", "100%"],
-                  }),
-                },
-              ]}
-            >
-              <LinearGradient
-                colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={StyleSheet.absoluteFill}
-              />
-            </Animated.View>
+        {stats.todayTotal > 0 && (
+          <View style={styles.progressContainer}>
+            <Text style={styles.progressLabel}>
+              Tâches du jour : {stats.todayDone}/{stats.todayTotal}
+            </Text>
+            <View style={styles.progressBarBackground}>
+              <Animated.View
+                style={[
+                  styles.progressBarFill,
+                  {
+                    width: progressAnim.interpolate({
+                      inputRange: [0, 100],
+                      outputRange: ["0%", "100%"],
+                    }),
+                  },
+                ]}
+              >
+                <LinearGradient
+                  colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </Animated.View>
+            </View>
           </View>
-        </View>
+        )}
 
         <View style={styles.grid}>
           <StatItem label="Tâches créées" value={stats.totalTasks} />
@@ -227,7 +254,58 @@ const StatsScreen = ({ navigation }) => {
         >
           <Text style={styles.message}>{getMotivationalMessage()}</Text>
         </LinearGradient>
+
+        <Text style={styles.sectionTitle}>Succès</Text>
+        <Text style={styles.sectionHint}>
+          Débloque des badges en utilisant l’app.
+        </Text>
+        <View style={styles.badgesGrid}>
+          {achievements.map((a) => (
+            <View
+              key={a.id}
+              style={[
+                styles.badgeCard,
+                !a.unlocked && styles.badgeCardLocked,
+              ]}
+            >
+              {a.unlocked ? (
+                <LinearGradient
+                  colors={["#0894FF20", "#C959DD20", "#FF2E5420", "#FF900420"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.badgeIconGradient}
+                >
+                  <Ionicons name={a.icon} size={26} color="#FF2E54" />
+                </LinearGradient>
+              ) : (
+                <View style={[styles.badgeIconWrap, styles.badgeIconWrapLocked]}>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={26}
+                    color="#bbb"
+                  />
+                </View>
+              )}
+              <Text
+                style={[styles.badgeTitle, !a.unlocked && styles.badgeTextLocked]}
+                numberOfLines={2}
+              >
+                {a.title}
+              </Text>
+              <Text
+                style={[
+                  styles.badgeDesc,
+                  !a.unlocked && styles.badgeTextLocked,
+                ]}
+                numberOfLines={3}
+              >
+                {a.unlocked ? a.description : "???"}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -240,8 +318,9 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     backgroundColor: "#fff",
   },
+  scroll: { flex: 1 },
+  scrollContent: { paddingBottom: 40 },
   container: {
-    flex: 1,
     paddingTop: 5,
     paddingHorizontal: 20,
     backgroundColor: "#fff",
@@ -338,5 +417,72 @@ const styles = StyleSheet.create({
   flameText: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 24,
+    marginBottom: 6,
+    color: "#333",
+  },
+  sectionHint: {
+    fontSize: 13,
+    color: "#888",
+    marginBottom: 14,
+    lineHeight: 18,
+  },
+  badgesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 20,
+  },
+  badgeCard: {
+    width: "48%",
+    backgroundColor: "#fafafa",
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#eee",
+    minHeight: 130,
+  },
+  badgeCardLocked: {
+    backgroundColor: "#f5f5f5",
+    borderColor: "#e8e8e8",
+  },
+  badgeIconGradient: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+    overflow: "hidden",
+  },
+  badgeIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  badgeIconWrapLocked: {
+    backgroundColor: "#e0e0e0",
+  },
+  badgeTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#222",
+    marginBottom: 4,
+  },
+  badgeDesc: {
+    fontSize: 12,
+    color: "#666",
+    lineHeight: 16,
+  },
+  badgeTextLocked: {
+    color: "#aaa",
   },
 });

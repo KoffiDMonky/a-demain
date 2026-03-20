@@ -117,7 +117,11 @@ export const getStoredTasks = async () => {
 
 export const abandonOutdatedTasks = async () => {
   const data = await AsyncStorage.getItem("tasks");
-  const tasks = data ? JSON.parse(data) : [];
+  // Ne pas persister [] tant que l’utilisateur n’a jamais eu de clé « tasks »
+  // (sinon on bloque l’injection du tutoriel au premier lancement).
+  if (data == null) return;
+
+  const tasks = JSON.parse(data);
 
   const now = new Date();
   const todayStr = now.toISOString().split("T")[0];
