@@ -14,6 +14,7 @@ import PrivacyPolicyScreen from "./screens/PrivacyPolicyScreen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "./utils/notificationHelper";
 import { ensureNotificationPermission } from "./utils/notificationHelper";
+import { getTabBarIconName } from "./utils/tabBarIcons";
 
 // import {
 //   useFonts,
@@ -24,26 +25,17 @@ import { ensureNotificationPermission } from "./utils/notificationHelper";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-const isIOS = Platform.OS === "ios";
 
-// Stack pour l'ajout de tâche
-function RootTabs() {
+// Stack pour l'ajout de tâche (exporté pour tests d’intégration navigation)
+export function RootTabs() {
+  const isIOS = Platform.OS === "ios";
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-          if (route.name === "Accueil")
-            iconName = focused ? "home" : "home-outline";
-          else if (route.name === "Demain")
-            iconName = focused ? "calendar" : "calendar-outline";
-          else if (route.name === "Stats")
-            iconName = focused ? "bar-chart" : "bar-chart-outline";
-          else if (route.name === "Confidentialité" && isIOS)
-            iconName = focused
-              ? "information-circle"
-              : "information-circle-outline";
+          const iconName = getTabBarIconName(route.name, focused);
+          if (!iconName) return null;
           return (
             <Ionicons
               name={iconName}

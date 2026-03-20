@@ -1,28 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1774043051951" clover="3.2.0">
-  <project timestamp="1774043051951" name="All files">
-    <metrics statements="498" coveredstatements="482" conditionals="322" coveredconditionals="262" methods="152" coveredmethods="147" elements="972" coveredelements="891" complexity="0" loc="498" ncloc="498" packages="5" files="17" classes="17"/>
+<coverage generated="1774043966237" clover="3.2.0">
+  <project timestamp="1774043966237" name="All files">
+    <metrics statements="502" coveredstatements="497" conditionals="325" coveredconditionals="287" methods="153" coveredmethods="151" elements="980" coveredelements="935" complexity="0" loc="502" ncloc="502" packages="5" files="18" classes="18"/>
     <package name="a-demain">
-      <metrics statements="17" coveredstatements="6" conditionals="22" coveredconditionals="0" methods="5" coveredmethods="2"/>
+      <metrics statements="11" coveredstatements="11" conditionals="6" coveredconditionals="6" methods="5" coveredmethods="5"/>
       <file name="App.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/App.js">
-        <metrics statements="17" coveredstatements="6" conditionals="22" coveredconditionals="0" methods="5" coveredmethods="2"/>
-        <line num="25" count="1" type="stmt"/>
+        <metrics statements="11" coveredstatements="11" conditionals="6" coveredconditionals="6" methods="5" coveredmethods="5"/>
         <line num="26" count="1" type="stmt"/>
         <line num="27" count="1" type="stmt"/>
-        <line num="31" count="0" type="stmt"/>
-        <line num="33" count="0" type="stmt"/>
-        <line num="37" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="38" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="39" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="40" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="41" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="42" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="43" count="0" type="cond" truecount="0" falsecount="4"/>
-        <line num="44" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="47" count="0" type="stmt"/>
-        <line num="98" count="1" type="stmt"/>
-        <line num="99" count="1" type="stmt"/>
-        <line num="102" count="1" type="stmt"/>
+        <line num="31" count="5" type="stmt"/>
+        <line num="32" count="5" type="stmt"/>
+        <line num="34" count="29" type="stmt"/>
+        <line num="37" count="29" type="stmt"/>
+        <line num="38" count="29" type="cond" truecount="2" falsecount="0"/>
+        <line num="39" count="25" type="stmt"/>
+        <line num="90" count="5" type="stmt"/>
+        <line num="91" count="5" type="stmt"/>
+        <line num="94" count="5" type="stmt"/>
       </file>
     </package>
     <package name="a-demain.assets">
@@ -40,10 +34,10 @@
       <metrics statements="57" coveredstatements="57" conditionals="23" coveredconditionals="22" methods="26" coveredmethods="26"/>
       <file name="AnimatedCheckbox.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/components/AnimatedCheckbox.js">
         <metrics statements="26" coveredstatements="26" conditionals="4" coveredconditionals="4" methods="11" coveredmethods="11"/>
-        <line num="14" count="2" type="stmt"/>
-        <line num="15" count="2" type="stmt"/>
-        <line num="16" count="14" type="stmt"/>
-        <line num="17" count="14" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="7" type="stmt"/>
+        <line num="17" count="7" type="stmt"/>
         <line num="20" count="644" type="stmt"/>
         <line num="24" count="46" type="stmt"/>
         <line num="25" count="46" type="stmt"/>
@@ -54,22 +48,22 @@
         <line num="32" count="6" type="stmt"/>
         <line num="33" count="6" type="stmt"/>
         <line num="38" count="46" type="stmt"/>
-        <line num="39" count="345" type="stmt"/>
+        <line num="39" count="351" type="stmt"/>
         <line num="45" count="46" type="stmt"/>
         <line num="46" count="92" type="stmt"/>
         <line num="47" count="644" type="stmt"/>
         <line num="48" count="644" type="stmt"/>
-        <line num="49" count="4816" type="stmt"/>
-        <line num="50" count="4816" type="stmt"/>
-        <line num="57" count="4816" type="stmt"/>
-        <line num="64" count="4816" type="stmt"/>
+        <line num="49" count="4900" type="stmt"/>
+        <line num="50" count="4900" type="stmt"/>
+        <line num="57" count="4900" type="stmt"/>
+        <line num="64" count="4900" type="stmt"/>
         <line num="77" count="644" type="stmt"/>
         <line num="81" count="46" type="stmt"/>
-        <line num="107" count="2" type="stmt"/>
+        <line num="107" count="1" type="stmt"/>
       </file>
       <file name="TaskItem.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/components/TaskItem.js">
         <metrics statements="10" coveredstatements="10" conditionals="10" coveredconditionals="10" methods="7" coveredmethods="7"/>
-        <line num="9" count="3" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
         <line num="10" count="50" type="stmt"/>
         <line num="12" count="50" type="stmt"/>
         <line num="13" count="40" type="stmt"/>
@@ -78,11 +72,11 @@
         <line num="24" count="50" type="stmt"/>
         <line num="37" count="7" type="stmt"/>
         <line num="39" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="59" count="3" type="stmt"/>
+        <line num="59" count="2" type="stmt"/>
       </file>
       <file name="TimePicker.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/components/TimePicker.js">
         <metrics statements="10" coveredstatements="10" conditionals="7" coveredconditionals="7" methods="3" coveredmethods="3"/>
-        <line num="6" count="3" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
         <line num="7" count="14" type="stmt"/>
         <line num="9" count="14" type="stmt"/>
         <line num="10" count="4" type="cond" truecount="2" falsecount="0"/>
@@ -91,11 +85,11 @@
         <line num="23" count="14" type="stmt"/>
         <line num="38" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="39" count="2" type="stmt"/>
-        <line num="47" count="3" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
       </file>
       <file name="TomorrowTaskItem.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/components/TomorrowTaskItem.js">
         <metrics statements="11" coveredstatements="11" conditionals="2" coveredconditionals="1" methods="5" coveredmethods="5"/>
-        <line num="10" count="3" type="stmt"/>
+        <line num="10" count="2" type="stmt"/>
         <line num="11" count="9" type="stmt"/>
         <line num="13" count="9" type="stmt"/>
         <line num="14" count="1" type="cond" truecount="1" falsecount="1"/>
@@ -105,14 +99,14 @@
         <line num="21" count="9" type="stmt"/>
         <line num="26" count="9" type="stmt"/>
         <line num="34" count="2" type="stmt"/>
-        <line num="52" count="3" type="stmt"/>
+        <line num="52" count="2" type="stmt"/>
       </file>
     </package>
     <package name="a-demain.screens">
       <metrics statements="249" coveredstatements="248" conditionals="145" coveredconditionals="122" methods="71" coveredmethods="70"/>
       <file name="HomeScreen.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/screens/HomeScreen.js">
         <metrics statements="116" coveredstatements="116" conditionals="66" coveredconditionals="54" methods="33" coveredmethods="33"/>
-        <line num="40" count="2" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
         <line num="41" count="63" type="stmt"/>
         <line num="42" count="63" type="stmt"/>
         <line num="43" count="63" type="stmt"/>
@@ -183,7 +177,7 @@
         <line num="215" count="2" type="stmt"/>
         <line num="216" count="2" type="stmt"/>
         <line num="220" count="63" type="cond" truecount="3" falsecount="0"/>
-        <line num="221" count="47" type="stmt"/>
+        <line num="221" count="42" type="stmt"/>
         <line num="222" count="10" type="cond" truecount="2" falsecount="0"/>
         <line num="224" count="63" type="stmt"/>
         <line num="226" count="39" type="stmt"/>
@@ -227,11 +221,11 @@
         <line num="355" count="1" type="stmt"/>
         <line num="362" count="60" type="stmt"/>
         <line num="394" count="1" type="stmt"/>
-        <line num="405" count="2" type="stmt"/>
+        <line num="405" count="1" type="stmt"/>
       </file>
       <file name="NewTaskScreen.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/screens/NewTaskScreen.js">
         <metrics statements="44" coveredstatements="43" conditionals="30" coveredconditionals="25" methods="6" coveredmethods="5"/>
-        <line num="28" count="2" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
         <line num="29" count="23" type="stmt"/>
         <line num="30" count="23" type="stmt"/>
         <line num="31" count="23" type="stmt"/>
@@ -274,24 +268,24 @@
         <line num="99" count="4" type="stmt"/>
         <line num="103" count="23" type="stmt"/>
         <line num="136" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="155" count="2" type="stmt"/>
+        <line num="155" count="1" type="stmt"/>
       </file>
       <file name="PrivacyPolicyScreen.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/screens/PrivacyPolicyScreen.js">
         <metrics statements="8" coveredstatements="8" conditionals="2" coveredconditionals="1" methods="5" coveredmethods="5"/>
-        <line num="13" count="2" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
         <line num="14" count="8" type="stmt"/>
         <line num="15" count="3" type="stmt"/>
         <line num="16" count="1" type="stmt"/>
         <line num="20" count="8" type="stmt"/>
         <line num="63" count="2" type="stmt"/>
         <line num="78" count="1" type="stmt"/>
-        <line num="103" count="2" type="stmt"/>
+        <line num="103" count="1" type="stmt"/>
       </file>
       <file name="StatsScreen.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/screens/StatsScreen.js">
         <metrics statements="47" coveredstatements="47" conditionals="32" coveredconditionals="30" methods="14" coveredmethods="14"/>
-        <line num="27" count="2" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
         <line num="28" count="72" type="stmt"/>
-        <line num="39" count="2" type="stmt"/>
+        <line num="39" count="1" type="stmt"/>
         <line num="41" count="18" type="stmt"/>
         <line num="52" count="18" type="stmt"/>
         <line num="53" count="18" type="stmt"/>
@@ -335,11 +329,11 @@
         <line num="168" count="18" type="stmt"/>
         <line num="199" count="1" type="stmt"/>
         <line num="264" count="108" type="stmt"/>
-        <line num="315" count="2" type="stmt"/>
+        <line num="315" count="1" type="stmt"/>
       </file>
       <file name="TomorrowScreen.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/screens/TomorrowScreen.js">
         <metrics statements="34" coveredstatements="34" conditionals="15" coveredconditionals="12" methods="13" coveredmethods="13"/>
-        <line num="19" count="2" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
         <line num="20" count="16" type="stmt"/>
         <line num="22" count="16" type="stmt"/>
         <line num="23" count="7" type="stmt"/>
@@ -372,18 +366,18 @@
         <line num="82" count="16" type="stmt"/>
         <line num="95" count="8" type="stmt"/>
         <line num="108" count="1" type="stmt"/>
-        <line num="119" count="2" type="stmt"/>
+        <line num="119" count="1" type="stmt"/>
       </file>
     </package>
     <package name="a-demain.utils">
-      <metrics statements="173" coveredstatements="169" conditionals="132" coveredconditionals="118" methods="50" coveredmethods="49"/>
+      <metrics statements="183" coveredstatements="179" conditionals="151" coveredconditionals="137" methods="51" coveredmethods="50"/>
       <file name="achievements.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/utils/achievements.js">
         <metrics statements="58" coveredstatements="56" conditionals="53" coveredconditionals="49" methods="26" coveredmethods="26"/>
-        <line num="6" count="5" type="stmt"/>
-        <line num="7" count="5" type="stmt"/>
-        <line num="9" count="5" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="7" count="4" type="stmt"/>
+        <line num="9" count="4" type="stmt"/>
         <line num="10" count="5" type="cond" truecount="3" falsecount="0"/>
-        <line num="37" count="5" type="stmt"/>
+        <line num="37" count="4" type="stmt"/>
         <line num="43" count="11" type="stmt"/>
         <line num="50" count="11" type="cond" truecount="2" falsecount="0"/>
         <line num="57" count="11" type="cond" truecount="2" falsecount="0"/>
@@ -482,9 +476,9 @@
       </file>
       <file name="storage.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/utils/storage.js">
         <metrics statements="63" coveredstatements="62" conditionals="49" coveredconditionals="40" methods="13" coveredmethods="13"/>
-        <line num="5" count="5" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
         <line num="6" count="165" type="cond" truecount="3" falsecount="0"/>
-        <line num="10" count="5" type="stmt"/>
+        <line num="10" count="4" type="stmt"/>
         <line num="11" count="105" type="stmt"/>
         <line num="12" count="105" type="stmt"/>
         <line num="13" count="138" type="cond" truecount="2" falsecount="0"/>
@@ -492,7 +486,7 @@
         <line num="15" count="137" type="cond" truecount="2" falsecount="0"/>
         <line num="16" count="137" type="stmt"/>
         <line num="18" count="105" type="stmt"/>
-        <line num="21" count="5" type="stmt"/>
+        <line num="21" count="4" type="stmt"/>
         <line num="22" count="102" type="stmt"/>
         <line num="23" count="133" type="stmt"/>
         <line num="24" count="133" type="cond" truecount="2" falsecount="0"/>
@@ -526,14 +520,14 @@
         <line num="86" count="11" type="stmt"/>
         <line num="88" count="11" type="stmt"/>
         <line num="91" count="102" type="stmt"/>
-        <line num="101" count="5" type="stmt"/>
+        <line num="101" count="4" type="stmt"/>
         <line num="102" count="1" type="stmt"/>
         <line num="103" count="1" type="stmt"/>
         <line num="110" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="113" count="5" type="stmt"/>
+        <line num="113" count="4" type="stmt"/>
         <line num="114" count="91" type="stmt"/>
         <line num="115" count="91" type="cond" truecount="2" falsecount="0"/>
-        <line num="118" count="5" type="stmt"/>
+        <line num="118" count="4" type="stmt"/>
         <line num="119" count="19" type="stmt"/>
         <line num="122" count="19" type="cond" truecount="2" falsecount="0"/>
         <line num="124" count="15" type="stmt"/>
@@ -548,8 +542,8 @@
       </file>
       <file name="streak.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/utils/streak.js">
         <metrics statements="16" coveredstatements="16" conditionals="12" coveredconditionals="12" methods="4" coveredmethods="4"/>
-        <line num="3" count="4" type="stmt"/>
-        <line num="5" count="4" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
         <line num="6" count="104" type="stmt"/>
         <line num="7" count="104" type="stmt"/>
         <line num="15" count="65" type="stmt"/>
@@ -564,6 +558,19 @@
         <line num="34" count="22" type="cond" truecount="2" falsecount="0"/>
         <line num="37" count="26" type="stmt"/>
         <line num="41" count="26" type="stmt"/>
+      </file>
+      <file name="tabBarIcons.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/utils/tabBarIcons.js">
+        <metrics statements="10" coveredstatements="10" conditionals="19" coveredconditionals="19" methods="1" coveredmethods="1"/>
+        <line num="11" count="35" type="stmt"/>
+        <line num="13" count="35" type="cond" truecount="2" falsecount="0"/>
+        <line num="14" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="16" count="26" type="cond" truecount="2" falsecount="0"/>
+        <line num="17" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="19" count="17" type="cond" truecount="2" falsecount="0"/>
+        <line num="20" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="8" type="cond" truecount="4" falsecount="0"/>
+        <line num="23" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="25" count="2" type="stmt"/>
       </file>
     </package>
   </project>

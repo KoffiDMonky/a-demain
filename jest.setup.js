@@ -31,3 +31,13 @@ afterAll(() => {
   global.console.error = originalError;
   global.console.warn = originalWarn;
 });
+
+// Sous Jest, SafeAreaProvider peut ne pas descendre les enfants dans l’arbre RTL (écran vide).
+jest.mock("react-native-safe-area-context", () => {
+  const React = require("react");
+  const actual = jest.requireActual("react-native-safe-area-context");
+  return {
+    ...actual,
+    SafeAreaProvider: ({ children }) => <>{children}</>,
+  };
+});
