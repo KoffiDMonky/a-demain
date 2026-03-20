@@ -45,13 +45,6 @@ const TomorrowScreen = ({ navigation }) => {
     );
   };
 
-  const formatTime = (dateString) => {
-    const d = new Date(dateString);
-    const h = d.getHours().toString().padStart(2, "0");
-    const m = d.getMinutes().toString().padStart(2, "0");
-    return `${h}h${m}`;
-  };
-
   const deleteTask = async (taskId) => {
     const stored = await AsyncStorage.getItem("tasks");
     let tasks = stored ? JSON.parse(stored) : [];

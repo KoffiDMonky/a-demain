@@ -145,42 +145,6 @@ const StatsScreen = ({ navigation }) => {
     return messages[index];
   };
 
-  const handleClearTasks = async () => {
-    await AsyncStorage.removeItem("tasks");
-    alert("🧹 Données supprimées");
-  };
-
-  const handleSeedTasks = async () => {
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
-
-    const makeTask = (text, day) => ({
-      id: Math.random().toString(36).substring(7),
-      text,
-      createdAt: new Date(),
-      dueDate: day,
-      status: "pending",
-      snoozeCount: 0,
-      notificationId: null,
-    });
-
-    const sample = [
-      makeTask("Boire de l'eau 💧", today),
-      makeTask("Lire 10 pages 📖", today),
-      makeTask("Marcher 30 minutes 🚶", today),
-      makeTask("Éteindre le téléphone à 22h 📵", today),
-      makeTask("Appeler un ami ☎️", tomorrow),
-      makeTask("Regarder un documentaire 🎬", tomorrow),
-      makeTask("Préparer le repas 🍲", tomorrow),
-      makeTask("Faire une sieste 😴", tomorrow),
-      makeTask("Planifier la semaine 🗓️", tomorrow),
-    ];
-
-    await AsyncStorage.setItem("tasks", JSON.stringify(sample));
-    alert("✨ Données de démo ajoutées");
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -263,29 +227,6 @@ const StatsScreen = ({ navigation }) => {
         >
           <Text style={styles.message}>{getMotivationalMessage()}</Text>
         </LinearGradient>
-        {/* <TouchableOpacity onPress={loadStats} style={{ marginBottom: 20 }}>
-          <Text style={{ color: "#FF2E54", textAlign: "center" }}>
-            🔄 Rafraîchir les stats
-          </Text>
-        </TouchableOpacity> */}
-
-        {/* <View style={{ marginTop: 30 }}>
-          <TouchableOpacity
-            style={[styles.devButton, { backgroundColor: "#FFCDD2" }]}
-            onPress={handleClearTasks}
-          >
-            <Text style={styles.devButtonText}>🧹 Supprimer les données</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.devButton, { backgroundColor: "#C8E6C9" }]}
-            onPress={handleSeedTasks}
-          >
-            <Text style={styles.devButtonText}>
-              ✨ Remplir avec données propres
-            </Text>
-          </TouchableOpacity>
-        </View> */}
       </View>
     </SafeAreaView>
   );
@@ -375,17 +316,6 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 8,
     overflow: "hidden",
-  },
-  devButton: {
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 12,
-    alignItems: "center",
-  },
-  devButtonText: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: "#333",
   },
   inline: {
     flexDirection: "row",

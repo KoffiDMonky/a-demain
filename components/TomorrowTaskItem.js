@@ -23,13 +23,6 @@ const TomorrowTaskItem = ({ item, onDelete, onEdit }) => {
     </RectButton>
   );
 
-  const formatTime = (dateString) => {
-    const d = new Date(dateString);
-    const h = d.getHours().toString().padStart(2, '0');
-    const m = d.getMinutes().toString().padStart(2, '0');
-    return `${h}h${m}`;
-  };
-
   return (
     <Swipeable
       ref={swipeableRef}
@@ -48,10 +41,7 @@ const TomorrowTaskItem = ({ item, onDelete, onEdit }) => {
             >
               <Ionicons name="hourglass" size={16} color="#fff" />
             </LinearGradient>
-            <Text style={styles.text}>
-          {/* {item.dueDate ? `🕒 ${formatTime(item.dueDate)} - ` : ''} */}
-          {item.text}
-        </Text>
+            <Text style={styles.text}>{item.text}</Text>
       </TouchableOpacity>
     </Swipeable>
   );
