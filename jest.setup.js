@@ -1,6 +1,16 @@
 // Extend matchers (RTL 12.4+ inclut les matchers, @testing-library/jest-native déprécié)
 import '@testing-library/jest-native/extend-expect';
 
+// ReanimatedSwipeable : même mock que RNGH (évite le module natif / Reanimated en tests)
+jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
+  const rngh = require('./__mocks__/react-native-gesture-handler.js');
+  return {
+    __esModule: true,
+    default: rngh.Swipeable,
+    SwipeDirection: { LEFT: 'left', RIGHT: 'right' },
+  };
+});
+
 // Réduire le bruit des warnings "not wrapped in act(...)" pour les mises à jour
 // asynchrones (loadTasks, loadTomorrowTasks) — les tests utilisent déjà findBy* pour attendre.
 const originalError = global.console.error;

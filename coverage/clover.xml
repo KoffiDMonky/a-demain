@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1774038925724" clover="3.2.0">
-  <project timestamp="1774038925724" name="All files">
+<coverage generated="1774040201598" clover="3.2.0">
+  <project timestamp="1774040201598" name="All files">
     <metrics statements="423" coveredstatements="399" conditionals="249" coveredconditionals="184" methods="123" coveredmethods="115" elements="795" coveredelements="698" complexity="0" loc="423" ncloc="423" packages="5" files="15" classes="15"/>
     <package name="a-demain">
       <metrics statements="17" coveredstatements="6" conditionals="22" coveredconditionals="0" methods="5" coveredmethods="2"/>
@@ -54,15 +54,15 @@
         <line num="32" count="2" type="stmt"/>
         <line num="33" count="2" type="stmt"/>
         <line num="38" count="7" type="stmt"/>
-        <line num="39" count="73" type="stmt"/>
+        <line num="39" count="59" type="stmt"/>
         <line num="45" count="7" type="stmt"/>
         <line num="46" count="14" type="stmt"/>
         <line num="47" count="98" type="stmt"/>
         <line num="48" count="98" type="stmt"/>
-        <line num="49" count="1022" type="stmt"/>
-        <line num="50" count="1022" type="stmt"/>
-        <line num="57" count="1022" type="stmt"/>
-        <line num="64" count="1022" type="stmt"/>
+        <line num="49" count="812" type="stmt"/>
+        <line num="50" count="812" type="stmt"/>
+        <line num="57" count="812" type="stmt"/>
+        <line num="64" count="812" type="stmt"/>
         <line num="77" count="98" type="stmt"/>
         <line num="81" count="7" type="stmt"/>
         <line num="107" count="2" type="stmt"/>
@@ -78,7 +78,7 @@
         <line num="24" count="11" type="stmt"/>
         <line num="37" count="3" type="stmt"/>
         <line num="39" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="60" count="3" type="stmt"/>
+        <line num="59" count="3" type="stmt"/>
       </file>
       <file name="TimePicker.js" path="/Users/agenorhouessou/Documents/dev/ReactNative/Expo/a-demain/components/TimePicker.js">
         <metrics statements="10" coveredstatements="10" conditionals="7" coveredconditionals="7" methods="3" coveredmethods="3"/>

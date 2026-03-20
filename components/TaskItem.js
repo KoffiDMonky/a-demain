@@ -1,7 +1,7 @@
 import React from "react";
 import { useRef } from "react";
-import { Text, StyleSheet, TouchableOpacity, View, Alert } from "react-native";
-import Swipeable from "react-native-gesture-handler/Swipeable";
+import { Text, StyleSheet, TouchableOpacity } from "react-native";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RectButton } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import AnimatedCheckbox from "./../components/AnimatedCheckbox.js"; // adapte le chemin si besoin
@@ -52,7 +52,6 @@ const TaskItem = ({ task, onDone, onSnooze, onDelete, onEdit }) => {
       </TouchableOpacity>
     </Swipeable>
   );
-  
 };
 
 export default TaskItem;
