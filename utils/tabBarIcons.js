@@ -13,9 +13,6 @@ export function getTabBarIconName(routeName, focused, platformOs = Platform.OS) 
   if (routeName === "Accueil") {
     return focused ? "home" : "home-outline";
   }
-  if (routeName === "Demain") {
-    return focused ? "calendar" : "calendar-outline";
-  }
   if (routeName === "Stats") {
     return focused ? "bar-chart" : "bar-chart-outline";
   }

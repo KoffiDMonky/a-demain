@@ -7,7 +7,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import HomeScreen from "./screens/HomeScreen";
-import TomorrowScreen from "./screens/TomorrowScreen";
 import StatsScreen from "./screens/StatsScreen";
 import NewTaskScreen from "./screens/NewTaskScreen";
 import PrivacyPolicyScreen from "./screens/PrivacyPolicyScreen";
@@ -49,7 +48,6 @@ export function RootTabs() {
       })}
     >
       <Tab.Screen name="Accueil" component={HomeScreen} />
-      <Tab.Screen name="Demain" component={TomorrowScreen} />
       <Tab.Screen name="Stats" component={StatsScreen} />
       {isIOS &&
         <Tab.Screen name="Confidentialité" component={PrivacyPolicyScreen} />}

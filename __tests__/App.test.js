@@ -15,14 +15,7 @@ jest.mock("../screens/HomeScreen", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return function MockHome() {
-    return <Text>Tes tâches du jour</Text>;
-  };
-});
-jest.mock("../screens/TomorrowScreen", () => {
-  const React = require("react");
-  const { Text } = require("react-native");
-  return function MockTomorrow() {
-    return <Text>Tâches prévues pour demain</Text>;
+    return <Text>Avancement du jour</Text>;
   };
 });
 jest.mock("../screens/StatsScreen", () => {
@@ -94,12 +87,7 @@ describe("App", () => {
     Platform.OS = "android";
     render(<App />);
 
-    expect(await screen.findByText("Tes tâches du jour")).toBeOnTheScreen();
-
-    fireEvent.press(screen.getByText("Demain"));
-    expect(
-      await screen.findByText("Tâches prévues pour demain")
-    ).toBeOnTheScreen();
+    expect(await screen.findByText("Avancement du jour")).toBeOnTheScreen();
 
     fireEvent.press(screen.getByText("Stats"));
     expect(await screen.findByText("Statistiques")).toBeOnTheScreen();
@@ -111,7 +99,7 @@ describe("App", () => {
     Platform.OS = "ios";
     render(<App />);
 
-    await screen.findByText("Tes tâches du jour");
+    await screen.findByText("Avancement du jour");
 
     fireEvent.press(screen.getByText("Confidentialité"));
     expect(

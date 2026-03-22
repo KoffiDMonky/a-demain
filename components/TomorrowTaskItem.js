@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Swipeable, {
   SwipeDirection,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -24,35 +24,54 @@ const TomorrowTaskItem = ({ item, onDelete, onEdit }) => {
   );
 
   return (
-    <Swipeable
-      ref={swipeableRef}
-      renderRightActions={renderRightActions}
-      onSwipeableOpen={handleSwipeOpen}
-    >
-      <TouchableOpacity
-        style={styles.taskRow}
-        onLongPress={() => onEdit(item)}
+    <View style={styles.itemWrap}>
+      <Swipeable
+        ref={swipeableRef}
+        renderRightActions={renderRightActions}
+        onSwipeableOpen={handleSwipeOpen}
       >
-        <LinearGradient
-          colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientCheckbox}
-        >
-          <Ionicons name="hourglass" size={16} color="#fff" />
-        </LinearGradient>
-        <Text style={styles.text}>{item.text}</Text>
-      </TouchableOpacity>
-    </Swipeable>
+        <View style={styles.cardFace}>
+          <TouchableOpacity
+            style={styles.taskRow}
+            onLongPress={() => onEdit(item)}
+          >
+            <LinearGradient
+              colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientCheckbox}
+            >
+              <Ionicons name="hourglass" size={16} color="#fff" />
+            </LinearGradient>
+            <Text style={styles.text}>{item.text}</Text>
+          </TouchableOpacity>
+        </View>
+      </Swipeable>
+    </View>
   );
 };
 
 export default TomorrowTaskItem;
 
 const styles = StyleSheet.create({
+  itemWrap: {
+    marginBottom: 12,
+  },
+  cardFace: {
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    overflow: "hidden",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
   taskRow: {
     flexDirection: "row",
-    backgroundColor: "#FFF",
+    backgroundColor: "transparent",
     padding: 12,
     gap: 10,
     minHeight: 55,
@@ -69,7 +88,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: 90,
-    marginBottom: 10,
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
   },
   gradientCheckbox: {
     width: 24,

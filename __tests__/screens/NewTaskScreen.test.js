@@ -92,7 +92,7 @@ describe("NewTaskScreen", () => {
       alertSpy.mockRestore();
     });
 
-    it("sauvegarde la tâche et navigue vers Demain après ajout", async () => {
+    it("sauvegarde la tâche et navigue vers Accueil après ajout", async () => {
       render(<NewTaskScreen />);
       const input = screen.getByPlaceholderText(
         "Ex: Appeler Mamie, ranger le bureau..."
@@ -108,7 +108,7 @@ describe("NewTaskScreen", () => {
       expect(tasks[0].text).toBe("Nouvelle tâche");
       expect(tasks[0].status).toBe("pending");
       expect(mockNavigate).toHaveBeenCalledWith("Retour", {
-        screen: "Demain",
+        screen: "Accueil",
       });
     });
   });

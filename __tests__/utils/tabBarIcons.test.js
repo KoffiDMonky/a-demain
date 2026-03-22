@@ -13,15 +13,6 @@ describe("getTabBarIconName", () => {
     });
   });
 
-  describe("Demain", () => {
-    it("focused", () => {
-      expect(getTabBarIconName("Demain", true, "ios")).toBe("calendar");
-    });
-    it("non focused", () => {
-      expect(getTabBarIconName("Demain", false, "ios")).toBe("calendar-outline");
-    });
-  });
-
   describe("Stats", () => {
     it("focused", () => {
       expect(getTabBarIconName("Stats", true, "android")).toBe("bar-chart");

@@ -3,22 +3,20 @@ import {
   View,
   Text,
   Image,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
   Platform,
   StatusBar,
-  Easing,
-  Animated,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
-import MaskedView from "@react-native-masked-view/masked-view";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import TaskItem from "./../components/TaskItem.js";
 import LottieView from "lottie-react-native";
+import TaskItem from "./../components/TaskItem.js";
+import TomorrowTaskItem from "../components/TomorrowTaskItem.js";
+import CollapsedDeckPreview from "../components/CollapsedDeckPreview.js";
 import {
   computeStats,
   getStoredTasks,
@@ -41,15 +39,17 @@ const HomeScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
   const [tomorrowTasks, setTomorrowTasks] = useState([]);
   const [animationDone, setAnimationDone] = useState(false);
+  /** true = déplié (cartes en liste), false = replié (illusion de pile) */
+  const [sectionOpenToday, setSectionOpenToday] = useState(true);
+  const [sectionOpenTomorrow, setSectionOpenTomorrow] = useState(true);
+  const prevTodayCountRef = useRef(undefined);
+  const prevTomorrowCountRef = useRef(undefined);
   const isFocused = useIsFocused();
-  const flameScale = useRef(new Animated.Value(1)).current;
   const [currentStreak, setCurrentStreak] = useState(0);
   const [streak, setStreak] = useState(0);
 
   const injectTutorialTasks = async (onInjected) => {
     const existing = await AsyncStorage.getItem("tasks");
-    // Clé absente → première ouverture : injecter le tutoriel.
-    // Tableau vide explicite → ne pas réinjecter (liste vide volontaire).
     if (existing !== null) {
       const parsed = JSON.parse(existing);
       if (Array.isArray(parsed)) {
@@ -122,28 +122,27 @@ const HomeScreen = ({ navigation }) => {
     await AsyncStorage.setItem("tasks", JSON.stringify(tutorialTasks));
 
     if (onInjected) {
-      onInjected(); // recharge la liste après injection
+      onInjected();
     }
   };
 
   const loadTasks = async () => {
-    const tasks = await getStoredTasks();
+    const tasksData = await getStoredTasks();
     const today = new Date();
-    const todayTasks = tasks.filter(
+    const todayTasks = tasksData.filter(
       (t) => isSameDay(new Date(t.dueDate), today) && t.status !== "abandoned"
     );
 
     const tmwDate = new Date();
     tmwDate.setDate(today.getDate() + 1);
-    const tmw = tasks.filter(
+    const tmw = tasksData.filter(
       (t) => isSameDay(new Date(t.dueDate), tmwDate) && t.status !== "abandoned"
     );
 
     setTasks(todayTasks);
     setTomorrowTasks(tmw);
 
-    // ✅ Calcule et stocke le streak à partir de toutes les tâches
-    const stats = computeStats(tasks);
+    const stats = computeStats(tasksData);
     setCurrentStreak(stats.currentStreak);
     await AsyncStorage.setItem(
       "streaks",
@@ -173,7 +172,7 @@ const HomeScreen = ({ navigation }) => {
     }
 
     await AsyncStorage.setItem("tasks", JSON.stringify(updated));
-    loadTasks(); // 🔁 ça recharge tout + met à jour le streak
+    loadTasks();
     loadStreak();
   };
 
@@ -210,6 +209,20 @@ const HomeScreen = ({ navigation }) => {
     loadTasks();
   };
 
+  const deleteTomorrowTask = async (taskId) => {
+    const stored = await AsyncStorage.getItem("tasks");
+    let allTasks = stored ? JSON.parse(stored) : [];
+    const task = allTasks.find((t) => t.id === taskId);
+
+    if (task?.notificationId) {
+      await cancelTaskNotification(task.notificationId);
+    }
+
+    allTasks = allTasks.filter((t) => t.id !== taskId);
+    await AsyncStorage.setItem("tasks", JSON.stringify(allTasks));
+    loadTasks();
+  };
+
   const tomorrow = () => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
@@ -222,17 +235,20 @@ const HomeScreen = ({ navigation }) => {
     tasks.every((t) => (t.snoozeCount || 0) === 0);
 
   const loadStreak = async () => {
-    // on recalcule le streak à partir de toutes les tâches stockées
-    const allTasks = await getStoredTasks();
-    const stats = computeStats(allTasks);
+    const allTasksData = await getStoredTasks();
+    const stats = computeStats(allTasksData);
     setCurrentStreak(stats.currentStreak);
   };
+
+  const todayTotal = tasks.length;
+  const todayDone = tasks.filter((t) => t.status === "done").length;
+  const progressPct =
+    todayTotal === 0 ? 0 : Math.round((todayDone / todayTotal) * 100);
 
   const renderItem = ({ item }) => (
     <TaskItem
       task={item}
       onDone={(t) => {
-        // Autorisé : tant que toutes les tâches ne sont pas finies
         if (!allTasksDone) {
           toggleTaskDone(t);
         }
@@ -248,6 +264,14 @@ const HomeScreen = ({ navigation }) => {
         if (!allTasksDone && t.status !== "done")
           navigation.navigate("Nouvelle Tâche", { task: t });
       }}
+    />
+  );
+
+  const renderTomorrowItem = (item) => (
+    <TomorrowTaskItem
+      item={item}
+      onDelete={deleteTomorrowTask}
+      onEdit={(task) => navigation.navigate("Nouvelle Tâche", { task })}
     />
   );
 
@@ -285,6 +309,34 @@ const HomeScreen = ({ navigation }) => {
     init();
   }, []);
 
+  /**
+   * Section vide = toujours repliée ; pas de toggle tant qu’il n’y a aucune tâche.
+   * Passage 0 → >0 : on déplie (tutoriel, chargement persistant, première tâche).
+   */
+  useEffect(() => {
+    const n = tasks.length;
+    const prev = prevTodayCountRef.current;
+
+    if (n === 0) {
+      setSectionOpenToday(false);
+    } else if (prev === 0) {
+      setSectionOpenToday(true);
+    }
+    prevTodayCountRef.current = n;
+  }, [tasks.length]);
+
+  useEffect(() => {
+    const n = tomorrowTasks.length;
+    const prev = prevTomorrowCountRef.current;
+
+    if (n === 0) {
+      setSectionOpenTomorrow(false);
+    } else if (prev === 0) {
+      setSectionOpenTomorrow(true);
+    }
+    prevTomorrowCountRef.current = n;
+  }, [tomorrowTasks.length]);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () =>
@@ -312,33 +364,26 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
-            source={require("../assets/Logo_Header.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+            source={require("../assets/Logo_Header.png")}
             style={styles.logo}
             resizeMode="contain"
           />
           <View style={styles.side}>
-            <View style={styles.inline}>
-              {currentStreak > 0 && (
+            {currentStreak > 0 && (
+              <View style={styles.inline}>
                 <View style={styles.flameContainer}>
-                  {/* <Text style={styles.flameIcon}>🔥</Text> */}
                   <Image
-                    source={require("../assets/Flamme_A_demain.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
+                    source={require("../assets/Flamme_A_demain.png")}
                     style={styles.flameLogo}
                     resizeMode="contain"
                   />
                   <Text style={styles.flameText}>{currentStreak}</Text>
                 </View>
-              )}
-              <TouchableOpacity
-                style={styles.fap}
-                onPress={() => navigation.navigate("Nouvelle Tâche")}
-              >
-                <Ionicons name="add" size={22} color="#fff" />
-              </TouchableOpacity>
-            </View>
+              </View>
+            )}
           </View>
         </View>
-        <Text style={styles.title}>Tes tâches du jour</Text>
+
         {allTasksDone && !animationDone && (
           <View
             pointerEvents="none"
@@ -356,31 +401,171 @@ const HomeScreen = ({ navigation }) => {
             />
           </View>
         )}
-        <View style={{ flex: 1 }}>
-          <FlatList
-            data={tasks}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ flexGrow: 1 }}
-            renderItem={renderItem}
-            ListEmptyComponent={
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+        >
+          {/* Progression du jour */}
+          <View style={styles.progressCard}>
+            <View style={styles.progressLabels}>
+              <Text style={styles.progressTitle}>Avancement du jour</Text>
+              <Text style={styles.progressFraction}>
+                {todayDone} / {todayTotal}
+              </Text>
+            </View>
+            <View style={styles.progressTrack}>
+              <View
+                style={[styles.progressFill, { width: `${progressPct}%` }]}
+              />
+            </View>
+          </View>
+
+          {/* Section Aujourd'hui — tap : déplier / replier (désactivé si aucune tâche) */}
+          <View style={[styles.sectionHeaderWithLine, styles.sectionHeaderFirst]}>
+            <TouchableOpacity
+              style={[
+                styles.sectionTitleTap,
+                tasks.length === 0 && styles.sectionHeaderDisabled,
+              ]}
+              onPress={() =>
+                tasks.length > 0 && setSectionOpenToday((o) => !o)
+              }
+              disabled={tasks.length === 0}
+              activeOpacity={tasks.length === 0 ? 1 : 0.7}
+              testID="home-section-today-header"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: tasks.length === 0 }}
+              accessibilityLabel={
+                tasks.length === 0
+                  ? "Aujourd’hui — aucune tâche, section repliée"
+                  : sectionOpenToday
+                    ? "Replier la section Aujourd’hui"
+                    : "Déplier la section Aujourd’hui"
+              }
+            >
+              <Text style={styles.sectionHeading}>Aujourd’hui</Text>
+              <Ionicons
+                name="chevron-down"
+                size={22}
+                color="#6B7280"
+                style={{
+                  transform: [
+                    { rotate: sectionOpenToday ? "0deg" : "180deg" },
+                  ],
+                }}
+              />
+            </TouchableOpacity>
+            <View style={styles.sectionHeaderLineWrapToday}>
+              <View style={styles.sectionHeaderLine} />
+            </View>
+          </View>
+          {sectionOpenToday ? (
+            tasks.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>
                   Aucune tâche pour aujourd'hui 💤
                 </Text>
               </View>
-            }
-          />
-          {/* {allTasksDone && !animationDone && (
-            <View style={styles.doneOverlay} pointerEvents="none">
-              <Image
-                source={require("../assets/Flamme_A_demain.png")} // ← adapte ce chemin selon l'endroit où tu mets le fichier
-                style={styles.streakFlame}
-                resizeMode="contain"
+            ) : (
+              tasks.map((item) => (
+                <View key={item.id}>{renderItem({ item })}</View>
+              ))
+            )
+          ) : (
+            <CollapsedDeckPreview
+              variant="today"
+              items={tasks}
+              emptyText="Aucune tâche pour aujourd'hui 💤"
+              onPress={
+                tasks.length > 0
+                  ? () => setSectionOpenToday(true)
+                  : undefined
+              }
+              accessibilityLabel="Déplier la section Aujourd’hui"
+            />
+          )}
+
+          {/* Section À demain — tap : déplier / replier */}
+          <View style={styles.tomorrowHeader}>
+            <TouchableOpacity
+              style={[
+                styles.sectionTitleTap,
+                tomorrowTasks.length === 0 && styles.sectionHeaderDisabled,
+              ]}
+              onPress={() =>
+                tomorrowTasks.length > 0 &&
+                setSectionOpenTomorrow((o) => !o)
+              }
+              disabled={tomorrowTasks.length === 0}
+              activeOpacity={tomorrowTasks.length === 0 ? 1 : 0.7}
+              testID="home-section-tomorrow-header"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: tomorrowTasks.length === 0 }}
+              accessibilityLabel={
+                tomorrowTasks.length === 0
+                  ? "À demain — aucune tâche, section repliée"
+                  : sectionOpenTomorrow
+                    ? "Replier la section À demain"
+                    : "Déplier la section À demain"
+              }
+            >
+              <Text style={styles.sectionHeading}>À demain</Text>
+              <Ionicons
+                name="chevron-down"
+                size={22}
+                color="#6B7280"
+                style={{
+                  transform: [
+                    { rotate: sectionOpenTomorrow ? "0deg" : "180deg" },
+                  ],
+                }}
               />
-              <Text style={styles.flameCurrentStreakText}>{currentStreak}</Text>
+            </TouchableOpacity>
+            <View style={styles.sectionHeaderLineWrapTomorrow}>
+              <View style={styles.sectionHeaderLine} />
             </View>
-          )} */}
-        </View>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Nouvelle Tâche")}
+              style={styles.sectionAddBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              testID="icon-add-tomorrow"
+              accessibilityLabel="Ajouter une tâche pour demain"
+              accessibilityRole="button"
+            >
+              <Ionicons name="add" size={15} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          {sectionOpenTomorrow ? (
+            tomorrowTasks.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                  Rien de prévu pour demain 😌
+                </Text>
+              </View>
+            ) : (
+              tomorrowTasks.map((item) => (
+                <View key={item.id}>{renderTomorrowItem(item)}</View>
+              ))
+            )
+          ) : (
+            <CollapsedDeckPreview
+              variant="tomorrow"
+              items={tomorrowTasks}
+              emptyText="Rien de prévu pour demain 😌"
+              onPress={
+                tomorrowTasks.length > 0
+                  ? () => setSectionOpenTomorrow(true)
+                  : undefined
+              }
+              accessibilityLabel="Déplier la section À demain"
+            />
+          )}
+        </ScrollView>
+
         {allTasksDone && !animationDone && (
           <View
             pointerEvents="none"
@@ -414,6 +599,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: "#fff",
   },
+  scrollContent: {
+    paddingBottom: 32,
+    flexGrow: 1,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -431,73 +620,101 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
   },
-
-  titleWrapper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+  progressCard: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
   },
-  appName: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#4CAF50",
-    letterSpacing: 1,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  task: {
-    padding: 15,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  text: { fontSize: 16 },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 10,
-    gap: 15,
-  },
-  footer: {
+  progressLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
-  },
-  button: { backgroundColor: "#4CAF50", padding: 12, borderRadius: 8 },
-  buttonText: { color: "white", fontWeight: "bold" },
-  empty: {
-    textAlign: "center",
-    fontStyle: "italic",
-    color: "#999",
-    marginTop: 40,
-  },
-  fap: {
-    backgroundColor: "#FF2E54",
-    borderRadius: 30,
-    width: 30,
-    height: 30,
-    justifyContent: "center",
     alignItems: "center",
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 30,
     marginBottom: 10,
   },
-  taskDone: {
-    backgroundColor: "#D0F0C0", // vert clair
-    borderColor: "#4CAF50",
-    borderWidth: 1,
+  progressTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  progressFraction: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#6B7280",
+  },
+  progressTrack: {
+    height: 10,
+    borderRadius: 6,
+    backgroundColor: "#E5E7EB",
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 6,
+    backgroundColor: "#FF2E54",
+    minWidth: 0,
+  },
+  sectionHeading: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  sectionHeaderWithLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  sectionHeaderFirst: {
+    marginTop: 8,
+  },
+  sectionTitleTap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  sectionHeaderDisabled: {
+    opacity: 0.55,
+  },
+  /** Prolonge la ligne jusqu’au bord droit de l’écran (compense paddingHorizontal du conteneur) */
+  sectionHeaderLineWrapToday: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: -20,
+    justifyContent: "center",
+  },
+  /** Ligne du chevron jusqu’au bouton + (marge à droite = air avant le +) */
+  sectionHeaderLineWrapTomorrow: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 12,
+    justifyContent: "center",
+  },
+  sectionHeaderLine: {
+    width: "100%",
+    height: StyleSheet.hairlineWidth,
+    minHeight: 1,
+    backgroundColor: "#D1D5DB",
+  },
+  tomorrowHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
+    gap: 0,
+  },
+  sectionAddBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#FF2E54",
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 50, // évite de coller aux bords
+    paddingVertical: 32,
     backgroundColor: "#fff",
   },
   emptyText: {
@@ -519,14 +736,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-
   flameContainer: {
     flexDirection: "row",
     alignItems: "center",
-  },
-
-  flameIcon: {
-    fontSize: 16,
   },
   flameLogo: {
     width: 30,
@@ -534,32 +746,6 @@ const styles = StyleSheet.create({
   },
   flameText: {
     fontSize: 16,
-    fontWeight: "bold",
-  },
-  doneOverlay: {
-    position: "absolute",
-    top: "40%", // ou ajuste à ton goût
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    zIndex: 9,
-    backgroundColor: "#fff",
-    height: "100%",
-  },
-  doneText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  streakFlame: {
-    height: 200,
-    width: 200,
-  },
-  flameCurrentStreakText: {
-    color: "#fff",
-    position: "absolute",
-    top: 100,
-    fontSize: 60,
     fontWeight: "bold",
   },
 });

@@ -61,12 +61,12 @@ describe("HomeScreen", () => {
     await AsyncStorage.clear();
   });
 
-  it("affiche le titre Tes tâches du jour", async () => {
+  it("affiche la section Aujourd'hui et l'avancement", async () => {
     render(
       <HomeScreen navigation={getDefaultNavigation()} />
     );
-    await screen.findByText("Tes tâches du jour");
-    expect(screen.getByText("Tes tâches du jour")).toBeOnTheScreen();
+    await screen.findByText(/Aujourd.hui/);
+    expect(screen.getByText("Avancement du jour")).toBeOnTheScreen();
   });
 
   it("injecte les tâches tutoriel quand le stockage est vide", async () => {
@@ -94,7 +94,7 @@ describe("HomeScreen", () => {
       <HomeScreen navigation={getDefaultNavigation()} />
     );
     await screen.findByText("Aucune tâche pour aujourd'hui 💤");
-    const addButton = screen.getByTestId("icon-add");
+    const addButton = screen.getByTestId("icon-add-tomorrow");
     fireEvent.press(addButton);
     expect(mockNavigate).toHaveBeenCalledWith("Nouvelle Tâche");
   });
@@ -359,7 +359,7 @@ describe("HomeScreen", () => {
 
     try {
       render(<HomeScreen navigation={getDefaultNavigation()} />);
-      await screen.findByText("Tes tâches du jour");
+      await screen.findByText(/Aujourd.hui/);
 
       await waitFor(() => {
         expect(mockSetOptions).toHaveBeenCalled();
@@ -470,7 +470,7 @@ describe("HomeScreen", () => {
     try {
       await AsyncStorage.setItem("tasks", JSON.stringify([]));
       render(<HomeScreen navigation={getDefaultNavigation()} />);
-      await screen.findByText("Tes tâches du jour");
+      await screen.findByText(/Aujourd.hui/);
     } finally {
       Platform.OS = previousOS;
     }

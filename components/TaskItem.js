@@ -1,6 +1,6 @@
 import React from "react";
 import { useRef } from "react";
-import { Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RectButton } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,48 +22,77 @@ const TaskItem = ({ task, onDone, onSnooze, onDelete, onEdit }) => {
   );
 
   return (
-    <Swipeable
-      ref={swipeableRef}
-      renderLeftActions={
-        task.status !== "done" ? renderLeftActions : undefined
-      }
-      renderRightActions={
-        task.status !== "done" ? renderRightActions : undefined
-      }
-      enabled={task.status !== "done"}
-    >
-      <TouchableOpacity
-        style={[styles.task, task.status === "done" && styles.taskDone]}
-        onPress={() => onDone(task)}
-        onLongPress={() => {
-          if (task.status !== "done") onEdit(task);
-        }}
-        activeOpacity={0.8}
+    <View style={styles.itemWrap}>
+      <Swipeable
+        ref={swipeableRef}
+        renderLeftActions={
+          task.status !== "done" ? renderLeftActions : undefined
+        }
+        renderRightActions={
+          task.status !== "done" ? renderRightActions : undefined
+        }
+        enabled={task.status !== "done"}
       >
-        <AnimatedCheckbox active={task.status === "done"} />
-        <Text
+        <View
           style={[
-            styles.taskText,
-            task.status === "done" && styles.taskTextDone,
+            styles.cardFace,
+            task.status === "done" && styles.cardFaceDone,
           ]}
         >
-          {task.text}
-        </Text>
-      </TouchableOpacity>
-    </Swipeable>
+          <TouchableOpacity
+            style={styles.task}
+            onPress={() => onDone(task)}
+            onLongPress={() => {
+              if (task.status !== "done") onEdit(task);
+            }}
+            activeOpacity={0.8}
+          >
+            <AnimatedCheckbox active={task.status === "done"} />
+            <Text
+              style={[
+                styles.taskText,
+                task.status === "done" && styles.taskTextDone,
+              ]}
+            >
+              {task.text}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Swipeable>
+    </View>
   );
 };
 
 export default TaskItem;
 
 const styles = StyleSheet.create({
+  itemWrap: {
+    marginBottom: 12,
+  },
+  /** Face de carte qui glisse — les actions swipe restent derrière (hors de cette vue) */
+  cardFace: {
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    overflow: "hidden",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  cardFaceDone: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+  },
   task: {
     padding: 12,
     flexDirection: "row",
     gap: 10,
     minHeight: 55,
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
   },
   taskText: {
     fontSize: 16,
@@ -80,14 +109,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: 60,
-    marginBottom: 10,
+    borderTopRightRadius: 14,
+    borderBottomRightRadius: 14,
   },
   rightAction: {
     backgroundColor: "#FF2E54",
     justifyContent: "center",
     alignItems: "center",
     width: 90,
-    marginBottom: 10,
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
   },
   checkbox: {
     borderRadius: 30,

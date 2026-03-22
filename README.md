@@ -15,7 +15,7 @@ Chaque journée réussie te rapproche de ton objectif, et une belle flamme 🔥 
 ## ✨ Fonctionnalités principales
 
 - ✅ **Gestion des tâches journalières**
-- 🔁 **Affichage des tâches de demain**
+- 🔁 **Tâches d’aujourd’hui et de demain** sur l’onglet Accueil (barre d’avancement ; tâches en cartes ; repli/dépli par section avec illusion de pile)
 - 🔥 **Système de série (streak)** avec animation de flamme
 - 📊 **Statistiques** : progression, pourcentage de rappels, record de série, etc.
 - 🕒 **Notification quotidienne** pour te rappeler tes tâches du jour
@@ -46,7 +46,7 @@ Elle est publiée via **Expo** et testable facilement :
 
 ## 📂 Organisation du code
 
-a-demain/ ├── components/ # Composants UI (TaskItem, AnimatedCheckbox…) ├── screens/ # HomeScreen, StatsScreen, TomorrowScreen… ├── utils/ # Fonctions utilitaires (storage.js, notificationHelper.js…) ├── assets/ # Animations, images └── App.js # Entrée principale de l'app
+a-demain/ ├── components/ # TaskItem, CollapsedDeckPreview, TomorrowTaskItem… ├── screens/ # HomeScreen (aujourd’hui + demain), StatsScreen… ├── utils/ # storage.js, notificationHelper.js… ├── assets/ # Animations, images └── App.js # Entrée principale
 
 
 ---

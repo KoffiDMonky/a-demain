@@ -88,7 +88,7 @@ const NewTaskScreen = () => {
     if (editingTask) {
       navigation.goBack();
     } else {
-      navigation.navigate("Retour", { screen: "Demain" });
+      navigation.navigate("Retour", { screen: "Accueil" });
     }
   };
 
