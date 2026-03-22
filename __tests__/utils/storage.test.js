@@ -134,6 +134,84 @@ describe("storage", () => {
       const stats = computeStats(tasks);
       expect(stats.bestStreak).toBeGreaterThanOrEqual(1);
     });
+
+    it("prolonge la série (currentStreak++) quand hier était valide et aujourd’hui entièrement complété", () => {
+      const tasks = [
+        { id: "hier", dueDate: "2025-03-14T12:00:00.000Z", status: "done" },
+        { id: "auj", dueDate: `${TODAY}T09:00:00.000Z`, status: "done" },
+      ];
+      const stats = computeStats(tasks);
+      // Hier compte pour 1, bloc « aujourd’hui » incrémente car lastValidDate = veille (l.84)
+      expect(stats.currentStreak).toBe(2);
+      expect(stats.bestStreak).toBe(2);
+    });
+
+    it("accepte un jour passé snoozed au plus une fois comme valide (branche snoozed)", () => {
+      const tasks = [
+        {
+          id: "s",
+          dueDate: "2025-03-14T12:00:00.000Z",
+          status: "snoozed",
+          snoozeCount: 1,
+        },
+      ];
+      const stats = computeStats(tasks);
+      expect(stats.currentStreak).toBe(1);
+    });
+
+    it("traite snoozeCount absent comme 0 pour un jour passé snoozed (branche || 0)", () => {
+      const tasks = [
+        {
+          id: "s",
+          dueDate: "2025-03-14T12:00:00.000Z",
+          status: "snoozed",
+        },
+      ];
+      const stats = computeStats(tasks);
+      expect(stats.currentStreak).toBe(1);
+    });
+
+    it("invalide un jour passé si une tâche est snoozed plus d’une fois (snoozeCount > 1)", () => {
+      const tasks = [
+        {
+          id: "s",
+          dueDate: "2025-03-14T12:00:00.000Z",
+          status: "snoozed",
+          snoozeCount: 2,
+        },
+        { id: "ok", dueDate: `${TODAY}T09:00:00.000Z`, status: "done" },
+      ];
+      const stats = computeStats(tasks);
+      expect(stats.currentStreak).toBe(1);
+    });
+
+    it("compte aujourd’hui snoozed (≤1) comme jour valide pour prolonger la série", () => {
+      const tasks = [
+        { id: "y", dueDate: "2025-03-14T12:00:00.000Z", status: "done" },
+        {
+          id: "t",
+          dueDate: `${TODAY}T09:00:00.000Z`,
+          status: "snoozed",
+          snoozeCount: 0,
+        },
+      ];
+      const stats = computeStats(tasks);
+      expect(stats.currentStreak).toBe(2);
+    });
+
+    it("n’étend pas la série à aujourd’hui si snoozed > 1 sur une tâche du jour", () => {
+      const tasks = [
+        { id: "y", dueDate: "2025-03-14T12:00:00.000Z", status: "done" },
+        {
+          id: "t",
+          dueDate: `${TODAY}T09:00:00.000Z`,
+          status: "snoozed",
+          snoozeCount: 2,
+        },
+      ];
+      const stats = computeStats(tasks);
+      expect(stats.currentStreak).toBe(1);
+    });
   });
 
   describe("updateAndStoreStreaks", () => {
@@ -161,6 +239,15 @@ describe("storage", () => {
       expect(parsed).toHaveProperty("currentStreak");
       expect(parsed).toHaveProperty("bestStreak");
       expect(setStreakState).toHaveBeenCalled();
+    });
+
+    it("écrit les streaks sans appeler setStreakState si le callback est omis", async () => {
+      const tasks = [
+        { id: "1", dueDate: `${TODAY}T09:00:00.000Z`, status: "done" },
+      ];
+      await expect(updateAndStoreStreaks(tasks)).resolves.toBeUndefined();
+      const raw = await AsyncStorage.getItem("streaks");
+      expect(raw).toBeTruthy();
     });
   });
 

@@ -17,8 +17,29 @@ jest.mock("expo-notifications", () => ({
 }));
 
 describe("notificationHelper", () => {
+  /** Référence conservée avant que beforeEach ne fasse clearAllMocks sur les mocks */
+  let handleNotificationFromModule;
+  beforeAll(() => {
+    expect(Notifications.setNotificationHandler).toHaveBeenCalled();
+    const cfg = Notifications.setNotificationHandler.mock.calls[0][0];
+    handleNotificationFromModule = cfg.handleNotification;
+    expect(handleNotificationFromModule).toEqual(expect.any(Function));
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe("handler de notifications (effet au chargement du module)", () => {
+    it("handleNotification : alerte + son en foreground, pas de badge", async () => {
+      const result = await handleNotificationFromModule();
+
+      expect(result).toEqual({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      });
+    });
   });
 
   describe("scheduleTaskNotification", () => {

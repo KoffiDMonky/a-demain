@@ -2,7 +2,13 @@
  * Tests de non-régression - NewTaskScreen (rendu + interactions)
  */
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react-native";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react-native";
+import { KeyboardAvoidingView, Platform, Switch } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NewTaskScreen from "../../screens/NewTaskScreen";
 
@@ -22,17 +28,19 @@ jest.mock("../../utils/notificationHelper", () => ({
 
 jest.mock("react-native-uuid", () => ({ v4: () => "uuid-123" }));
 
-jest.mock("@react-native-community/datetimepicker", () => {
-  const { View } = require("react-native");
-  return function MockDateTimePicker() {
-    return <View testID="datetime-picker-mock" />;
-  };
-});
+// Mock manuel __mocks__/@react-native-community/datetimepicker.js (triggers iOS + Android)
+jest.mock("@react-native-community/datetimepicker");
 
 describe("NewTaskScreen", () => {
+  const previousOS = Platform.OS;
+
   beforeEach(async () => {
     jest.clearAllMocks();
     await AsyncStorage.clear();
+  });
+
+  afterEach(() => {
+    Platform.OS = previousOS;
   });
 
   describe("rendu (création)", () => {
@@ -133,6 +141,32 @@ describe("NewTaskScreen", () => {
       const switchEl = screen.getByRole("switch");
       fireEvent(switchEl, "valueChange", true);
       expect(screen.getByText(/Rappel à/)).toBeOnTheScreen();
+    });
+
+    it("TimePicker onChange sans date (Android dismiss) : ne plante pas (branche !selectedDate)", () => {
+      const { DateTimePickerAndroid } = require("@react-native-community/datetimepicker");
+      Platform.OS = "android";
+      const { UNSAFE_root } = render(<NewTaskScreen />);
+      // Sur Android, getByRole("switch") ne résout pas toujours AndroidSwitch
+      fireEvent(UNSAFE_root.findByType(Switch), "valueChange", true);
+      fireEvent.press(screen.getByText(/Rappel à/));
+      expect(DateTimePickerAndroid.open).toHaveBeenCalled();
+      const { onChange } = DateTimePickerAndroid.open.mock.calls[0][0];
+      expect(() => onChange({ type: "dismissed" }, undefined)).not.toThrow();
+    });
+
+    it("KeyboardAvoidingView : behavior padding sur iOS, height sur Android", () => {
+      Platform.OS = "ios";
+      const { UNSAFE_root: rootIos } = render(<NewTaskScreen />);
+      expect(
+        rootIos.findByType(KeyboardAvoidingView).props.behavior
+      ).toBe("padding");
+
+      Platform.OS = "android";
+      const { UNSAFE_root: rootAndroid } = render(<NewTaskScreen />);
+      expect(
+        rootAndroid.findByType(KeyboardAvoidingView).props.behavior
+      ).toBe("height");
     });
 
     it("en édition, sauvegarde et appelle goBack (pas navigate)", async () => {

@@ -49,10 +49,18 @@ const Swipeable = React.forwardRef(function Swipeable(
         invokeRender(renderRightActions, prog, trans, mockMethods)
       ),
     onSwipeableOpen
-      ? React.createElement(View, {
-          testID: "swipe-open-simulate",
-          onTouchEnd: () => onSwipeableOpen("right"),
-        })
+      ? React.createElement(
+          View,
+          { testID: "swipe-open-simulate-triggers" },
+          React.createElement(View, {
+            testID: "swipe-open-simulate-right",
+            onTouchEnd: () => onSwipeableOpen("right"),
+          }),
+          React.createElement(View, {
+            testID: "swipe-open-simulate-left",
+            onTouchEnd: () => onSwipeableOpen("left"),
+          })
+        )
       : null
   );
 });

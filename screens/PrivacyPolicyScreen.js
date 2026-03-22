@@ -18,7 +18,15 @@ const PrivacyPolicyScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+      style={[
+        styles.safeArea,
+        {
+          paddingTop:
+            Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        },
+      ]}
+    >
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Politique de confidentialité</Text>
 
@@ -104,7 +112,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   container: {
     padding: 20,

@@ -3,17 +3,35 @@
  */
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react-native";
-import { Linking } from "react-native";
+import { Linking, Platform } from "react-native";
 import PrivacyPolicyScreen from "../../screens/PrivacyPolicyScreen";
 
 jest.spyOn(Linking, "openURL").mockImplementation(() => Promise.resolve());
 
 describe("PrivacyPolicyScreen", () => {
+  const previousOS = Platform.OS;
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    Platform.OS = previousOS;
+  });
+
   it("affiche le titre Politique de confidentialité", () => {
+    render(<PrivacyPolicyScreen />);
+    expect(screen.getByText("Politique de confidentialité")).toBeOnTheScreen();
+  });
+
+  it("sous Android, applique le padding lié à StatusBar sur le SafeArea", () => {
+    Platform.OS = "android";
+    render(<PrivacyPolicyScreen />);
+    expect(screen.getByText("Politique de confidentialité")).toBeOnTheScreen();
+  });
+
+  it("sous iOS, pas de paddingTop StatusBar sur le SafeArea", () => {
+    Platform.OS = "ios";
     render(<PrivacyPolicyScreen />);
     expect(screen.getByText("Politique de confidentialité")).toBeOnTheScreen();
   });

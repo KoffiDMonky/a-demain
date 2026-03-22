@@ -87,7 +87,21 @@ describe("TomorrowTaskItem", () => {
       />
     );
 
-    fireEvent(screen.getByTestId("swipe-open-simulate"), "touchEnd");
+    fireEvent(screen.getByTestId("swipe-open-simulate-right"), "touchEnd");
     expect(onDelete).toHaveBeenCalledWith("tomorrow-1");
+  });
+
+  it("n’appelle pas onDelete au swipe ouvert vers la gauche (autre direction)", () => {
+    const onDelete = jest.fn();
+    render(
+      <TomorrowTaskItem
+        item={defaultItem}
+        onDelete={onDelete}
+        onEdit={jest.fn()}
+      />
+    );
+
+    fireEvent(screen.getByTestId("swipe-open-simulate-left"), "touchEnd");
+    expect(onDelete).not.toHaveBeenCalled();
   });
 });
