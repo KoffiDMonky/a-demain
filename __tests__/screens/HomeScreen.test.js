@@ -54,6 +54,14 @@ function flushLottieAnimationFinishes() {
   fns.forEach((fn) => fn());
 }
 
+/** Date de demain à midi (cohérent avec les filtres jour dans HomeScreen) */
+function tomorrowNoon() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(12, 0, 0, 0);
+  return d;
+}
+
 describe("HomeScreen", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -474,5 +482,178 @@ describe("HomeScreen", () => {
     } finally {
       Platform.OS = previousOS;
     }
+  });
+
+  it("supprime une tâche « demain » (deleteTomorrowTask) et met à jour le storage", async () => {
+    const tmw = tomorrowNoon();
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "tmw-del",
+          text: "À supprimer demain",
+          dueDate: tmw.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("À supprimer demain");
+
+    fireEvent.press(screen.getByTestId("tomorrow-task-trash"));
+
+    await waitFor(async () => {
+      const stored = await AsyncStorage.getItem("tasks");
+      expect(JSON.parse(stored || "[]")).toHaveLength(0);
+    });
+    expect(cancelTaskNotification).not.toHaveBeenCalled();
+  });
+
+  it("supprime une tâche demain avec notification : annule le rappel (deleteTomorrowTask)", async () => {
+    const tmw = tomorrowNoon();
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "tmw-notif",
+          text: "Demain avec rappel",
+          dueDate: tmw.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: "notif-tmw-del",
+        },
+      ])
+    );
+
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Demain avec rappel");
+
+    fireEvent.press(screen.getByTestId("tomorrow-task-trash"));
+
+    await waitFor(() => {
+      expect(cancelTaskNotification).toHaveBeenCalledWith("notif-tmw-del");
+    });
+    await waitFor(async () => {
+      const stored = await AsyncStorage.getItem("tasks");
+      expect(JSON.parse(stored || "[]")).toHaveLength(0);
+    });
+  });
+
+  it("navigue vers Nouvelle Tâche au longPress sur une tâche demain (onEdit)", async () => {
+    const tmw = tomorrowNoon();
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "tmw-edit",
+          text: "Éditer demain",
+          dueDate: tmw.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Éditer demain");
+
+    fireEvent(screen.getByText("Éditer demain"), "longPress");
+
+    expect(mockNavigate).toHaveBeenCalledWith("Nouvelle Tâche", {
+      task: expect.objectContaining({
+        id: "tmw-edit",
+        text: "Éditer demain",
+      }),
+    });
+  });
+
+  it("toggle la section Aujourd'hui via l'en-tête quand il y a des tâches", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "toggle-today",
+          text: "Tâche pour toggle section",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Tâche pour toggle section");
+
+    const header = screen.getByTestId("home-section-today-header");
+    fireEvent.press(header);
+    fireEvent.press(header);
+
+    expect(screen.getByText("Tâche pour toggle section")).toBeOnTheScreen();
+  });
+
+  it("replie la section Aujourd'hui puis déplie au tap sur la pile (CollapsedDeckPreview)", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "deck-today",
+          text: "Visible après dépli depuis la pile",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Visible après dépli depuis la pile");
+
+    fireEvent.press(screen.getByTestId("home-section-today-header"));
+
+    const sameLabel = screen.getAllByLabelText(/Déplier la section Aujourd/);
+    expect(sameLabel.length).toBeGreaterThanOrEqual(2);
+    fireEvent.press(sameLabel[1]);
+
+    expect(
+      screen.getByText("Visible après dépli depuis la pile")
+    ).toBeOnTheScreen();
+  });
+
+  it("replie la section À demain puis déplie au tap sur la pile (CollapsedDeckPreview)", async () => {
+    const tmw = tomorrowNoon();
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "deck-tmw",
+          text: "Tâche demain pile",
+          dueDate: tmw.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Tâche demain pile");
+
+    fireEvent.press(screen.getByTestId("home-section-tomorrow-header"));
+
+    const demainBtns = screen.getAllByLabelText(/Déplier la section À demain/);
+    expect(demainBtns.length).toBeGreaterThanOrEqual(2);
+    fireEvent.press(demainBtns[1]);
+
+    expect(screen.getByText("Tâche demain pile")).toBeOnTheScreen();
   });
 });

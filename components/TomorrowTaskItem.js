@@ -18,7 +18,11 @@ const TomorrowTaskItem = ({ item, onDelete, onEdit }) => {
   };
 
   const renderRightActions = () => (
-    <RectButton style={styles.rightAction} onPress={() => onDelete(item.id)}>
+    <RectButton
+      style={styles.rightAction}
+      onPress={() => onDelete(item.id)}
+      testID="tomorrow-task-trash"
+    >
       <Ionicons name="trash-outline" size={24} color="#fff" />
     </RectButton>
   );
