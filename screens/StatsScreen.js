@@ -166,7 +166,15 @@ const StatsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+      style={[
+        styles.safeArea,
+        {
+          paddingTop:
+            Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        },
+      ]}
+    >
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -319,7 +327,6 @@ export default StatsScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     backgroundColor: "#fff",
   },
   scroll: { flex: 1 },

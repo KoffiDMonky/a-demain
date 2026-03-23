@@ -2,18 +2,27 @@
  * Tests de non-régression - StatsScreen (rendu + interactions)
  */
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react-native";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react-native";
+import { Platform, StyleSheet, StatusBar } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 import StatsScreen from "../../screens/StatsScreen";
 
 const mockNavigate = jest.fn();
+const mockIsFocused = jest.fn(() => true);
 jest.mock("@react-navigation/native", () => ({
-  useIsFocused: () => true,
+  useIsFocused: () => mockIsFocused(),
 }));
 
 describe("StatsScreen", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockIsFocused.mockReturnValue(true);
     await AsyncStorage.clear();
   });
 
@@ -122,5 +131,52 @@ describe("StatsScreen", () => {
     expect(screen.getByText(/Tu avances,.+essentiel/)).toBeOnTheScreen();
 
     randomSpy.mockRestore();
+  });
+
+  it("sans focus : ne charge pas les stats (pas de lecture AsyncStorage « tasks »)", async () => {
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "only",
+          text: "Ignorée si pas focus",
+          dueDate: new Date().toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+        },
+      ])
+    );
+    const spy = jest.spyOn(AsyncStorage, "getItem");
+    mockIsFocused.mockReturnValue(false);
+
+    render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Tâches créées")).toBeOnTheScreen();
+    });
+
+    const tasksReads = spy.mock.calls.filter((c) => c[0] === "tasks");
+    expect(tasksReads.length).toBe(0);
+    spy.mockRestore();
+  });
+
+  it("SafeAreaView : paddingTop = StatusBar sous Android", async () => {
+    const prevOS = Platform.OS;
+    const prevH = StatusBar.currentHeight;
+    Platform.OS = "android";
+    StatusBar.currentHeight = 44;
+
+    const { UNSAFE_root } = render(
+      <StatsScreen navigation={{ navigate: mockNavigate }} />
+    );
+    await screen.findByText("Tâches créées");
+
+    const nodes = UNSAFE_root.findAllByType(SafeAreaView);
+    expect(nodes.length).toBeGreaterThan(0);
+    const flat = StyleSheet.flatten(nodes[0].props.style);
+    expect(flat.paddingTop).toBe(44);
+
+    Platform.OS = prevOS;
+    StatusBar.currentHeight = prevH;
   });
 });
