@@ -196,6 +196,7 @@ const StatsScreen = ({ navigation }) => {
 
               <TouchableOpacity
                 style={styles.fap}
+                testID="stats-screen-add"
                 onPress={() => navigation.navigate("Nouvelle Tâche")}
               >
                 <Ionicons name="add" size={22} color="#fff" />

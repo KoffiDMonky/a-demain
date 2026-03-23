@@ -17,10 +17,10 @@ describe("StatsScreen", () => {
     await AsyncStorage.clear();
   });
 
-  it("affiche le titre Statistiques", async () => {
+  it("n’affiche plus le titre « Statistiques » (retiré de l’UI)", async () => {
     render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
-    await screen.findByText("Statistiques");
-    expect(screen.getByText("Statistiques")).toBeOnTheScreen();
+    await screen.findByText("Tâches créées");
+    expect(screen.queryByText("Statistiques")).toBeNull();
   });
 
   it("affiche la section Succès avec des badges", async () => {
@@ -54,21 +54,21 @@ describe("StatsScreen", () => {
 
   it("n’affiche pas la carte d'avancement du jour sans tâche prévue aujourd’hui", async () => {
     render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
-    await screen.findByText("Statistiques");
+    await screen.findByText("Tâches créées");
     expect(screen.queryByText("Avancement du jour")).toBeNull();
   });
 
   it("affiche les libellés des stats (Tâches créées, Série en cours)", async () => {
     render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
-    await screen.findByText("Statistiques");
+    await screen.findByText("Tâches créées");
     expect(screen.getByText("Tâches créées")).toBeOnTheScreen();
     expect(screen.getByText("Série en cours")).toBeOnTheScreen();
   });
 
   it("navigue vers Nouvelle Tâche au press du bouton ajouter", async () => {
     render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
-    await screen.findByText("Statistiques");
-    const addButton = screen.getByTestId("icon-add");
+    await screen.findByText("Tâches créées");
+    const addButton = screen.getByTestId("stats-screen-add");
     fireEvent.press(addButton);
     expect(mockNavigate).toHaveBeenCalledWith("Nouvelle Tâche");
   });
