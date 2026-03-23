@@ -112,7 +112,13 @@ export const updateAndStoreStreaks = async (tasks, setStreakState) => {
 
 export const getStoredTasks = async () => {
   const data = await AsyncStorage.getItem("tasks");
-  return data ? JSON.parse(data) : [];
+  if (data == null || data === "") return [];
+  try {
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 };
 
 export const abandonOutdatedTasks = async () => {
@@ -121,7 +127,13 @@ export const abandonOutdatedTasks = async () => {
   // (sinon on bloque l’injection du tutoriel au premier lancement).
   if (data == null) return;
 
-  const tasks = JSON.parse(data);
+  let tasks;
+  try {
+    tasks = JSON.parse(data);
+  } catch {
+    return;
+  }
+  if (!Array.isArray(tasks)) return;
 
   const now = new Date();
   const todayStr = now.toISOString().split("T")[0];

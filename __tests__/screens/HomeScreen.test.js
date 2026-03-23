@@ -12,6 +12,7 @@ import {
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HomeScreen from "../../screens/HomeScreen";
+import * as applyHomeTaskStatus from "../../utils/applyHomeTaskStatus";
 import {
   cancelTaskNotification,
   scheduleTaskNotification,
@@ -22,11 +23,13 @@ var __homeScreenLottieFinishes = [];
 
 const mockNavigate = jest.fn();
 const mockSetOptions = jest.fn();
+/** Permet de couvrir la branche `if (isFocused)` dans l’effet focus */
+const mockIsFocused = jest.fn(() => true);
 function getDefaultNavigation() {
   return { navigate: mockNavigate, setOptions: mockSetOptions };
 }
 jest.mock("@react-navigation/native", () => ({
-  useIsFocused: () => true,
+  useIsFocused: () => mockIsFocused(),
   useNavigation: () => ({ navigate: mockNavigate, setOptions: mockSetOptions }),
 }));
 
@@ -65,6 +68,7 @@ function tomorrowNoon() {
 describe("HomeScreen", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockIsFocused.mockReturnValue(true);
     __homeScreenLottieFinishes.length = 0;
     await AsyncStorage.clear();
   });
@@ -484,6 +488,30 @@ describe("HomeScreen", () => {
     }
   });
 
+  it("supprime une tâche demain : AsyncStorage vide au press (allTasks vide)", async () => {
+    const tmw = tomorrowNoon();
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "tmw-empty-store",
+          text: "Demain puis storage vidé",
+          dueDate: tmw.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Demain puis storage vidé");
+    await AsyncStorage.removeItem("tasks");
+    fireEvent.press(screen.getByTestId("tomorrow-task-trash"));
+    await waitFor(async () => {
+      expect(await AsyncStorage.getItem("tasks")).toBe(JSON.stringify([]));
+    });
+  });
+
   it("supprime une tâche « demain » (deleteTomorrowTask) et met à jour le storage", async () => {
     const tmw = tomorrowNoon();
     await AsyncStorage.setItem(
@@ -699,6 +727,138 @@ describe("HomeScreen", () => {
 
     expect(screen.getByText("Première tâche validée")).toBeOnTheScreen();
     expect(screen.queryByText("Seconde tâche validée")).toBeNull();
+  });
+
+  it("injecte le tutoriel quand tasks en stockage n’est pas un tableau (objet JSON)", async () => {
+    await AsyncStorage.setItem("tasks", JSON.stringify({ invalid: true }));
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Ajouter une tâche pour demain 📅");
+    expect(
+      screen.getByText(
+        "Glisse une tâche vers la droite pour la reporter à demain ➡️"
+      )
+    ).toBeOnTheScreen();
+  });
+
+  it("toggle done : AsyncStorage vide au moment du press (branche allTasks = [])", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "solo",
+          text: "Sans storage après chargement UI",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Sans storage après chargement UI");
+    await AsyncStorage.removeItem("tasks");
+    fireEvent.press(screen.getByText("Sans storage après chargement UI"));
+    await waitFor(async () => {
+      const stored = await AsyncStorage.getItem("tasks");
+      expect(JSON.parse(stored || "[]")).toEqual([]);
+    });
+  });
+
+  it("snooze : ne persiste rien si buildTasksAfterStatusChange retourne null", async () => {
+    const spy = jest
+      .spyOn(applyHomeTaskStatus, "buildTasksAfterStatusChange")
+      .mockResolvedValueOnce(null);
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "no-next",
+          text: "Snooze bloqué",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Snooze bloqué");
+    fireEvent.press(screen.getByTestId("icon-time-outline"));
+    await waitFor(() => {
+      expect(spy).toHaveBeenCalled();
+    });
+    await waitFor(async () => {
+      const stored = await AsyncStorage.getItem("tasks");
+      const list = JSON.parse(stored || "[]");
+      expect(list).toHaveLength(1);
+      expect(list[0].status).toBe("pending");
+    });
+    spy.mockRestore();
+  });
+
+  it("suppression : AsyncStorage vide au press (deleteTask avec allTasks vide)", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "del-solo",
+          text: "Suppr sans storage",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Suppr sans storage");
+    await AsyncStorage.removeItem("tasks");
+    fireEvent.press(screen.getByTestId("icon-trash-outline"));
+    await waitFor(async () => {
+      expect(await AsyncStorage.getItem("tasks")).toBe(JSON.stringify([]));
+    });
+  });
+
+  it("quand l’écran n’est pas focus, l’effet focus ne relance pas loadTasks (liste [] persistée)", async () => {
+    await AsyncStorage.setItem("tasks", JSON.stringify([]));
+    mockIsFocused.mockReturnValue(false);
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Aucune tâche pour aujourd'hui 💤");
+    expect(mockIsFocused).toHaveBeenCalled();
+  });
+
+  it("snooze vers demain : la tâche apparaît dans la section demain (prev 0 → 1)", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "move-tmw",
+          text: "Va à demain",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Va à demain");
+    fireEvent.press(screen.getByTestId("icon-time-outline"));
+    await waitFor(async () => {
+      const stored = await AsyncStorage.getItem("tasks");
+      const list = JSON.parse(stored || "[]");
+      expect(list[0].status).toBe("snoozed");
+    });
+    await screen.findByText("Va à demain");
+    expect(screen.queryByText("Rien de prévu pour demain 😌")).toBeNull();
   });
 
   it("replie la section À demain puis déplie au tap sur la pile (CollapsedDeckPreview)", async () => {

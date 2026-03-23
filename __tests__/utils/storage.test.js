@@ -257,10 +257,35 @@ describe("storage", () => {
       expect(Array.isArray(tasks)).toBe(true);
       expect(tasks.length).toBe(0);
     });
+
+    it("retourne [] si le JSON n’est pas un tableau (objet)", async () => {
+      await AsyncStorage.setItem("tasks", JSON.stringify({ foo: 1 }));
+      const tasks = await getStoredTasks();
+      expect(tasks).toEqual([]);
+    });
+
+    it("retourne [] si le JSON est invalide", async () => {
+      await AsyncStorage.setItem("tasks", "{pas json");
+      const tasks = await getStoredTasks();
+      expect(tasks).toEqual([]);
+    });
   });
 
   describe("abandonOutdatedTasks", () => {
     it("ne lance pas d’erreur (AsyncStorage mocké)", async () => {
+      await expect(abandonOutdatedTasks()).resolves.toBeUndefined();
+    });
+
+    it("ignore la clé tasks si le JSON n’est pas un tableau", async () => {
+      await AsyncStorage.setItem("tasks", JSON.stringify({ notArray: true }));
+      await expect(abandonOutdatedTasks()).resolves.toBeUndefined();
+      expect(await AsyncStorage.getItem("tasks")).toBe(
+        JSON.stringify({ notArray: true })
+      );
+    });
+
+    it("ignore la clé tasks si le JSON est invalide", async () => {
+      await AsyncStorage.setItem("tasks", "not-json");
       await expect(abandonOutdatedTasks()).resolves.toBeUndefined();
     });
 
