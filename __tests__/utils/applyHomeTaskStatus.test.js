@@ -48,6 +48,48 @@ describe("buildTasksAfterStatusChange", () => {
     expect(out[0].snoozeCount).toBe(0);
   });
 
+  it("ne modifie que la tâche ciblée dans le map (autres lignes inchangées)", async () => {
+    const d = new Date("2025-06-01T12:00:00.000Z");
+    const tasks = [
+      {
+        id: "a",
+        text: "A",
+        dueDate: d.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        notificationId: null,
+      },
+      {
+        id: "b",
+        text: "B",
+        dueDate: d.toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        notificationId: null,
+      },
+      {
+        id: "c",
+        text: "C",
+        dueDate: d.toISOString(),
+        status: "done",
+        snoozeCount: 0,
+        notificationId: null,
+      },
+    ];
+    const out = await buildTasksAfterStatusChange({
+      allTasks: tasks,
+      id: "b",
+      status: "abandoned",
+      tomorrow,
+      cancelTaskNotification: jest.fn(),
+      scheduleTaskNotification: jest.fn(),
+    });
+    expect(out).toHaveLength(3);
+    expect(out[0]).toEqual(tasks[0]);
+    expect(out[1]).toEqual({ ...tasks[1], status: "abandoned" });
+    expect(out[2]).toEqual(tasks[2]);
+  });
+
   it("snooze : annule et replanifie la notif quand notificationId est défini", async () => {
     const today = new Date();
     today.setHours(14, 15, 0, 0);
@@ -110,5 +152,38 @@ describe("buildTasksAfterStatusChange", () => {
     expect(schedule).not.toHaveBeenCalled();
     expect(out[0].status).toBe("snoozed");
     expect(out[0].snoozeCount).toBe(2);
+  });
+
+  it("snooze : map préserve les autres tâches telles quelles", async () => {
+    const today = new Date("2025-06-02T08:00:00.000Z");
+    const other = {
+      id: "other",
+      text: "Autre",
+      dueDate: today.toISOString(),
+      status: "pending",
+      snoozeCount: 0,
+      notificationId: null,
+    };
+    const toSnooze = {
+      id: "snz",
+      text: "Reporter",
+      dueDate: today.toISOString(),
+      status: "pending",
+      snoozeCount: 0,
+      notificationId: null,
+    };
+    const tasks = [other, toSnooze];
+    const out = await buildTasksAfterStatusChange({
+      allTasks: tasks,
+      id: "snz",
+      status: "snoozed",
+      tomorrow,
+      cancelTaskNotification: jest.fn(),
+      scheduleTaskNotification: jest.fn(),
+    });
+    expect(out[0]).toEqual(other);
+    expect(out[1].id).toBe("snz");
+    expect(out[1].status).toBe("snoozed");
+    expect(out[1].snoozeCount).toBe(1);
   });
 });
