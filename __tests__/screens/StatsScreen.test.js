@@ -31,7 +31,7 @@ describe("StatsScreen", () => {
     expect(screen.getByText("Premier pas")).toBeOnTheScreen();
   });
 
-  it("affiche la section Tâches du jour quand il y a des tâches prévues aujourd’hui", async () => {
+  it("affiche la carte d'avancement du jour quand il y a des tâches prévues aujourd’hui", async () => {
     const today = new Date();
     today.setHours(12, 0, 0, 0);
     await AsyncStorage.setItem(
@@ -48,14 +48,14 @@ describe("StatsScreen", () => {
     );
 
     render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
-    await screen.findByText(/Tâches du jour :/);
-    expect(screen.getByText(/Tâches du jour : 0\/1/)).toBeOnTheScreen();
+    await screen.findByText("Avancement du jour");
+    expect(screen.getByText("0 / 1")).toBeOnTheScreen();
   });
 
-  it("n’affiche pas la section Tâches du jour sans tâche prévue aujourd’hui", async () => {
+  it("n’affiche pas la carte d'avancement du jour sans tâche prévue aujourd’hui", async () => {
     render(<StatsScreen navigation={{ navigate: mockNavigate }} />);
     await screen.findByText("Statistiques");
-    expect(screen.queryByText(/Tâches du jour :/)).toBeNull();
+    expect(screen.queryByText("Avancement du jour")).toBeNull();
   });
 
   it("affiche les libellés des stats (Tâches créées, Série en cours)", async () => {

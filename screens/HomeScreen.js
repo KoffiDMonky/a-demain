@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import LottieView from "lottie-react-native";
 import TaskItem from "./../components/TaskItem.js";
 import TomorrowTaskItem from "../components/TomorrowTaskItem.js";
@@ -244,6 +245,10 @@ const HomeScreen = ({ navigation }) => {
   const todayDone = tasks.filter((t) => t.status === "done").length;
   const progressPct =
     todayTotal === 0 ? 0 : Math.round((todayDone / todayTotal) * 100);
+  const todayCollapsedItems =
+    allTasksDone && tasks.length > 0
+      ? tasks
+      : tasks.filter((t) => t.status !== "done");
 
   const renderItem = ({ item }) => (
     <TaskItem
@@ -417,7 +422,10 @@ const HomeScreen = ({ navigation }) => {
               </Text>
             </View>
             <View style={styles.progressTrack}>
-              <View
+              <LinearGradient
+                colors={["#0894FF", "#C959DD", "#FF2E54", "#FF9004"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={[styles.progressFill, { width: `${progressPct}%` }]}
               />
             </View>
@@ -477,7 +485,7 @@ const HomeScreen = ({ navigation }) => {
           ) : (
             <CollapsedDeckPreview
               variant="today"
-              items={tasks}
+              items={todayCollapsedItems}
               emptyText="Aucune tâche pour aujourd'hui 💤"
               onPress={
                 tasks.length > 0
@@ -651,7 +659,6 @@ const styles = StyleSheet.create({
   progressFill: {
     height: "100%",
     borderRadius: 6,
-    backgroundColor: "#FF2E54",
     minWidth: 0,
   },
   sectionHeading: {

@@ -53,18 +53,29 @@ export default function CollapsedDeckPreview({
     <View style={[styles.deckOuter, { minHeight: stackHeight }]}>
       {slice.map((item, index) => {
         const isFront = index === 0;
+        const isDoneLayer = variant === "today" && item.status === "done";
+        const isDoneFront = isFront && isDoneLayer;
         return (
           <View
             key={item.id}
             style={[
               styles.layer,
+              isDoneLayer && styles.layerDone,
               {
                 top: index * STEP_PX,
                 left: index * PERSPECTIVE_INSET,
                 right: index * PERSPECTIVE_INSET,
                 zIndex: MAX_LAYERS - index,
-                backgroundColor: isFront ? CARD.bg : CARD.bgBack,
-                borderColor: isFront ? CARD.border : "#E8ECF0",
+                backgroundColor: isDoneLayer
+                  ? "#F0FDF4"
+                  : isFront
+                    ? CARD.bg
+                    : CARD.bgBack,
+                borderColor: isDoneLayer
+                  ? "#BBF7D0"
+                  : isFront
+                    ? CARD.border
+                    : "#E8ECF0",
               },
               cardLayerShadow(index),
             ]}
@@ -81,10 +92,10 @@ export default function CollapsedDeckPreview({
                     <Ionicons name="hourglass" size={16} color="#fff" />
                   </LinearGradient>
                 ) : (
-                  <AnimatedCheckbox active={false} />
+                  <AnimatedCheckbox active={isDoneFront} />
                 )}
                 <Text
-                  style={styles.deckFrontText}
+                  style={[styles.deckFrontText, isDoneFront && styles.deckFrontTextDone]}
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
@@ -179,6 +190,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333333",
     fontWeight: "400",
+  },
+  deckFrontTextDone: {
+    color: "#888888",
+    textDecorationLine: "line-through",
+  },
+  layerDone: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
   },
   backPlaceholder: {
     flex: 1,

@@ -629,6 +629,78 @@ describe("HomeScreen", () => {
     ).toBeOnTheScreen();
   });
 
+  it("pile repliée Aujourd'hui : masque les tâches done si des pending existent", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "done-hidden",
+          text: "Tâche faite (masquée dans la pile)",
+          dueDate: today.toISOString(),
+          status: "done",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+        {
+          id: "pending-visible",
+          text: "Tâche en cours (visible dans la pile)",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Tâche en cours (visible dans la pile)");
+
+    fireEvent.press(screen.getByTestId("home-section-today-header"));
+
+    expect(
+      screen.queryByText("Tâche faite (masquée dans la pile)")
+    ).toBeNull();
+    expect(
+      screen.getByText("Tâche en cours (visible dans la pile)")
+    ).toBeOnTheScreen();
+  });
+
+  it("pile repliée Aujourd'hui : si tout est done, affiche la 1re tâche validée", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "done-first",
+          text: "Première tâche validée",
+          dueDate: today.toISOString(),
+          status: "done",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+        {
+          id: "done-second",
+          text: "Seconde tâche validée",
+          dueDate: today.toISOString(),
+          status: "done",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Première tâche validée");
+
+    fireEvent.press(screen.getByTestId("home-section-today-header"));
+
+    expect(screen.getByText("Première tâche validée")).toBeOnTheScreen();
+    expect(screen.queryByText("Seconde tâche validée")).toBeNull();
+  });
+
   it("replie la section À demain puis déplie au tap sur la pile (CollapsedDeckPreview)", async () => {
     const tmw = tomorrowNoon();
     await AsyncStorage.setItem(

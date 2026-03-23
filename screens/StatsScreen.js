@@ -204,17 +204,20 @@ const StatsScreen = ({ navigation }) => {
           </View>
         </View>
 
-        <Text style={styles.title}>Statistiques</Text>
+        {/* <Text style={styles.title}>Statistiques</Text> */}
 
         {stats.todayTotal > 0 && (
-          <View style={styles.progressContainer}>
-            <Text style={styles.progressLabel}>
-              Tâches du jour : {stats.todayDone}/{stats.todayTotal}
-            </Text>
-            <View style={styles.progressBarBackground}>
+          <View style={styles.progressCard}>
+            <View style={styles.progressLabels}>
+              <Text style={styles.progressTitle}>Avancement du jour</Text>
+              <Text style={styles.progressFraction}>
+                {stats.todayDone} / {stats.todayTotal}
+              </Text>
+            </View>
+            <View style={styles.progressTrack}>
               <Animated.View
                 style={[
-                  styles.progressBarFill,
+                  styles.progressFill,
                   {
                     width: progressAnim.interpolate({
                       inputRange: [0, 100],
@@ -382,19 +385,39 @@ const styles = StyleSheet.create({
     //color: "#388E3C",
     textAlign: "center",
   },
-  progressContainer: { width: "100%", marginBottom: 30 },
-  progressLabel: { fontSize: 16, marginBottom: 8, color: "#444" },
-  progressBarBackground: {
-    width: "100%",
-    height: 15,
-    backgroundColor: "#e0e0e0",
-    borderRadius: 8,
+  progressCard: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+  },
+  progressLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  progressTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  progressFraction: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#6B7280",
+  },
+  progressTrack: {
+    height: 10,
+    borderRadius: 6,
+    backgroundColor: "#E5E7EB",
     overflow: "hidden",
   },
-  progressBarFill: {
+  progressFill: {
     height: "100%",
-    borderRadius: 8,
+    borderRadius: 6,
     overflow: "hidden",
+    minWidth: 0,
   },
   inline: {
     flexDirection: "row",
