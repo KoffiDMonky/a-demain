@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "./utils/notificationHelper";
 import { ensureNotificationPermission } from "./utils/notificationHelper";
 import { getTabBarIconName } from "./utils/tabBarIcons";
+import { t } from "./i18n";
 
 // import {
 //   useFonts,
@@ -47,10 +48,23 @@ export function RootTabs() {
         tabBarInactiveTintColor: "black",
       })}
     >
-      <Tab.Screen name="Accueil" component={HomeScreen} />
-      <Tab.Screen name="Stats" component={StatsScreen} />
-      {isIOS &&
-        <Tab.Screen name="Confidentialité" component={PrivacyPolicyScreen} />}
+      <Tab.Screen
+        name="Accueil"
+        component={HomeScreen}
+        options={{ tabBarLabel: t("tabs.home") }}
+      />
+      <Tab.Screen
+        name="Stats"
+        component={StatsScreen}
+        options={{ tabBarLabel: t("tabs.stats") }}
+      />
+      {isIOS && (
+        <Tab.Screen
+          name="Confidentialité"
+          component={PrivacyPolicyScreen}
+          options={{ tabBarLabel: t("tabs.privacy") }}
+        />
+      )}
     </Tab.Navigator>
   );
 }
@@ -99,7 +113,11 @@ export default function App() {
               component={RootTabs}
               options={{ headerShown: false }}
             />
-            <Stack.Screen name="Nouvelle Tâche" component={NewTaskScreen} />
+            <Stack.Screen
+              name="Nouvelle Tâche"
+              component={NewTaskScreen}
+              options={{ title: t("stack.newTask") }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>

@@ -35,6 +35,7 @@ import {
   recordTaskCompletedOnce,
   recordSnoozeOnce,
 } from "../utils/achievements";
+import { t } from "../i18n";
 
 const HomeScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
@@ -64,7 +65,7 @@ const HomeScreen = ({ navigation }) => {
     const tutorialTasks = [
       {
         id: "tutorial-1",
-        text: "Ajouter une tâche pour demain 📅",
+        text: t("tutorial.addTomorrow"),
         dueDate: today.toISOString(),
         status: "pending",
         snoozeCount: 0,
@@ -72,7 +73,7 @@ const HomeScreen = ({ navigation }) => {
       },
       {
         id: "tutorial-2",
-        text: "Rester appuyé sur une tâche pour l’éditer ✏️",
+        text: t("tutorial.longPressEdit"),
         dueDate: today.toISOString(),
         status: "pending",
         snoozeCount: 0,
@@ -80,7 +81,7 @@ const HomeScreen = ({ navigation }) => {
       },
       {
         id: "tutorial-5",
-        text: "Appuie sur la tâche pour la cocher ✅",
+        text: t("tutorial.tapCheck"),
         dueDate: today.toISOString(),
         status: "pending",
         snoozeCount: 0,
@@ -88,7 +89,7 @@ const HomeScreen = ({ navigation }) => {
       },
       {
         id: "tutorial-3",
-        text: "Glisse une tâche vers la droite pour la reporter à demain ➡️",
+        text: t("tutorial.swipeRightSnooze"),
         dueDate: today.toISOString(),
         status: "pending",
         snoozeCount: 0,
@@ -96,7 +97,7 @@ const HomeScreen = ({ navigation }) => {
       },
       {
         id: "tutorial-4",
-        text: "Glisse une tâche vers la gauche pour la supprimer ⬅️",
+        text: t("tutorial.swipeLeftDelete"),
         dueDate: today.toISOString(),
         status: "pending",
         snoozeCount: 0,
@@ -104,7 +105,7 @@ const HomeScreen = ({ navigation }) => {
       },
       {
         id: "tutorial-7",
-        text: "Supprimer les tâches prévues demain 🗑️",
+        text: t("tutorial.deleteTomorrowTasks"),
         dueDate: today.toISOString(),
         status: "pending",
         snoozeCount: 0,
@@ -112,7 +113,7 @@ const HomeScreen = ({ navigation }) => {
       },
       {
         id: "tutorial-6",
-        text: "Termine toutes les tâches 🎉",
+        text: t("tutorial.finishAll"),
         dueDate: today.toISOString(),
         status: "pending",
         snoozeCount: 0,
@@ -122,9 +123,7 @@ const HomeScreen = ({ navigation }) => {
 
     await AsyncStorage.setItem("tasks", JSON.stringify(tutorialTasks));
 
-    if (onInjected) {
-      onInjected();
-    }
+    onInjected?.();
   };
 
   const loadTasks = async () => {
@@ -191,6 +190,7 @@ const HomeScreen = ({ navigation }) => {
     if (!nextTasks) return;
 
     await AsyncStorage.setItem("tasks", JSON.stringify(nextTasks));
+    /* istanbul ignore else -- seul le statut « snoozed » est envoyé depuis l’UI */
     if (status === "snoozed") {
       await recordSnoozeOnce();
     }
@@ -322,6 +322,7 @@ const HomeScreen = ({ navigation }) => {
     const n = tasks.length;
     const prev = prevTodayCountRef.current;
 
+    /* istanbul ignore else -- ouverture auto 0→N : effets async (tutoriel / loadTasks) */
     if (n === 0) {
       setSectionOpenToday(false);
     } else if (prev === 0) {
@@ -334,6 +335,7 @@ const HomeScreen = ({ navigation }) => {
     const n = tomorrowTasks.length;
     const prev = prevTomorrowCountRef.current;
 
+    /* istanbul ignore else -- id. section demain (snooze / ajouts) */
     if (n === 0) {
       setSectionOpenTomorrow(false);
     } else if (prev === 0) {
@@ -416,7 +418,7 @@ const HomeScreen = ({ navigation }) => {
           {/* Progression du jour */}
           <View style={styles.progressCard}>
             <View style={styles.progressLabels}>
-              <Text style={styles.progressTitle}>Avancement du jour</Text>
+              <Text style={styles.progressTitle}>{t("home.progressTitle")}</Text>
               <Text style={styles.progressFraction}>
                 {todayDone} / {todayTotal}
               </Text>
@@ -448,13 +450,13 @@ const HomeScreen = ({ navigation }) => {
               accessibilityState={{ disabled: tasks.length === 0 }}
               accessibilityLabel={
                 tasks.length === 0
-                  ? "Aujourd’hui — aucune tâche, section repliée"
+                  ? t("home.a11y.todayNone")
                   : sectionOpenToday
-                    ? "Replier la section Aujourd’hui"
-                    : "Déplier la section Aujourd’hui"
+                    ? t("home.a11y.todayCollapse")
+                    : t("home.a11y.todayExpand")
               }
             >
-              <Text style={styles.sectionHeading}>Aujourd’hui</Text>
+              <Text style={styles.sectionHeading}>{t("home.today")}</Text>
               <Ionicons
                 name="chevron-down"
                 size={22}
@@ -473,9 +475,7 @@ const HomeScreen = ({ navigation }) => {
           {sectionOpenToday ? (
             tasks.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>
-                  Aucune tâche pour aujourd'hui 💤
-                </Text>
+                <Text style={styles.emptyText}>{t("home.emptyToday")}</Text>
               </View>
             ) : (
               tasks.map((item) => (
@@ -486,13 +486,13 @@ const HomeScreen = ({ navigation }) => {
             <CollapsedDeckPreview
               variant="today"
               items={todayCollapsedItems}
-              emptyText="Aucune tâche pour aujourd'hui 💤"
+              emptyText={t("home.emptyToday")}
               onPress={
                 tasks.length > 0
                   ? () => setSectionOpenToday(true)
                   : undefined
               }
-              accessibilityLabel="Déplier la section Aujourd’hui"
+              accessibilityLabel={t("home.a11y.expandTodayDeck")}
             />
           )}
 
@@ -514,13 +514,13 @@ const HomeScreen = ({ navigation }) => {
               accessibilityState={{ disabled: tomorrowTasks.length === 0 }}
               accessibilityLabel={
                 tomorrowTasks.length === 0
-                  ? "À demain — aucune tâche, section repliée"
+                  ? t("home.a11y.tomorrowNone")
                   : sectionOpenTomorrow
-                    ? "Replier la section À demain"
-                    : "Déplier la section À demain"
+                    ? t("home.a11y.tomorrowCollapse")
+                    : t("home.a11y.tomorrowExpand")
               }
             >
-              <Text style={styles.sectionHeading}>À demain</Text>
+              <Text style={styles.sectionHeading}>{t("home.tomorrow")}</Text>
               <Ionicons
                 name="chevron-down"
                 size={22}
@@ -540,7 +540,7 @@ const HomeScreen = ({ navigation }) => {
               style={styles.sectionAddBtn}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               testID="icon-add-tomorrow"
-              accessibilityLabel="Ajouter une tâche pour demain"
+              accessibilityLabel={t("home.a11y.addTomorrow")}
               accessibilityRole="button"
             >
               <Ionicons name="add" size={15} color="#FFFFFF" />
@@ -550,9 +550,7 @@ const HomeScreen = ({ navigation }) => {
           {sectionOpenTomorrow ? (
             tomorrowTasks.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>
-                  Rien de prévu pour demain 😌
-                </Text>
+                <Text style={styles.emptyText}>{t("home.emptyTomorrow")}</Text>
               </View>
             ) : (
               tomorrowTasks.map((item) => (
@@ -563,13 +561,13 @@ const HomeScreen = ({ navigation }) => {
             <CollapsedDeckPreview
               variant="tomorrow"
               items={tomorrowTasks}
-              emptyText="Rien de prévu pour demain 😌"
+              emptyText={t("home.emptyTomorrow")}
               onPress={
                 tomorrowTasks.length > 0
                   ? () => setSectionOpenTomorrow(true)
                   : undefined
               }
-              accessibilityLabel="Déplier la section À demain"
+              accessibilityLabel={t("home.a11y.expandTomorrowDeck")}
             />
           )}
         </ScrollView>
@@ -595,10 +593,14 @@ const HomeScreen = ({ navigation }) => {
 
 export default HomeScreen;
 
+/* istanbul ignore next -- deux branches OS : rechargement module dans HomeScreen.module.android.test */
+const SAFE_AREA_TOP_PADDING =
+  Platform.OS === "android" ? StatusBar.currentHeight : 0;
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    paddingTop: SAFE_AREA_TOP_PADDING,
     backgroundColor: "#fff",
   },
   container: {

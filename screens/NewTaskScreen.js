@@ -24,6 +24,7 @@ import {
 import { markTomorrowTaskPlanned } from "../utils/achievements";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import TimePicker from "./../components/TimePicker";
+import { t } from "../i18n";
 
 const NewTaskScreen = () => {
   const [text, setText] = useState("");
@@ -38,7 +39,7 @@ const NewTaskScreen = () => {
 
   const addTask = async () => {
     if (text.trim().length === 0) {
-      Alert.alert("Oups", "Tu dois écrire quelque chose !");
+      Alert.alert(t("newTask.alertTitle"), t("newTask.alertEmpty"));
       return;
     }
     const tomorrow = new Date();
@@ -108,17 +109,17 @@ const NewTaskScreen = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
           <Text style={styles.label}>
-            {editingTask ? "Que dois-tu faire ?" : "Que veux-tu faire demain ?"}
+            {editingTask ? t("newTask.labelEdit") : t("newTask.labelNew")}
           </Text>
           <TextInput
             style={styles.input}
-            placeholder="Ex: Appeler Mamie, ranger le bureau..."
+            placeholder={t("newTask.placeholder")}
             value={text}
             onChangeText={setText}
             multiline
           />
           <View style={styles.reminderRow}>
-            <Text style={styles.label}>Activer un rappel</Text>
+            <Text style={styles.label}>{t("newTask.reminder")}</Text>
             <Switch
               value={enableReminder}
               onValueChange={setEnableReminder}
@@ -129,19 +130,19 @@ const NewTaskScreen = () => {
           </View>
 
           {enableReminder && (
-            <>
-              <TimePicker
-                value={reminderTime}
-                onChange={(event, selectedDate) => {
-                  if (selectedDate) setReminderTime(selectedDate);
-                }}
-              />
-            </>
+            <TimePicker
+              value={reminderTime}
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setReminderTime(selectedDate);
+                }
+              }}
+            />
           )}
 
           <TouchableOpacity style={styles.button} onPress={addTask}>
             <Text style={styles.buttonText}>
-              {editingTask ? "Modifier la tâche" : "Ajouter la tâche"}
+              {editingTask ? t("newTask.submitEdit") : t("newTask.submitAdd")}
             </Text>
           </TouchableOpacity>
         </View>

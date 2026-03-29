@@ -187,30 +187,8 @@
 <a name='L122'></a><a href='#L122'>122</a>
 <a name='L123'></a><a href='#L123'>123</a>
 <a name='L124'></a><a href='#L124'>124</a>
-<a name='L125'></a><a href='#L125'>125</a>
-<a name='L126'></a><a href='#L126'>126</a>
-<a name='L127'></a><a href='#L127'>127</a>
-<a name='L128'></a><a href='#L128'>128</a>
-<a name='L129'></a><a href='#L129'>129</a>
-<a name='L130'></a><a href='#L130'>130</a>
-<a name='L131'></a><a href='#L131'>131</a>
-<a name='L132'></a><a href='#L132'>132</a>
-<a name='L133'></a><a href='#L133'>133</a>
-<a name='L134'></a><a href='#L134'>134</a>
-<a name='L135'></a><a href='#L135'>135</a>
-<a name='L136'></a><a href='#L136'>136</a>
-<a name='L137'></a><a href='#L137'>137</a>
-<a name='L138'></a><a href='#L138'>138</a>
-<a name='L139'></a><a href='#L139'>139</a>
-<a name='L140'></a><a href='#L140'>140</a>
-<a name='L141'></a><a href='#L141'>141</a>
-<a name='L142'></a><a href='#L142'>142</a>
-<a name='L143'></a><a href='#L143'>143</a>
-<a name='L144'></a><a href='#L144'>144</a>
-<a name='L145'></a><a href='#L145'>145</a>
-<a name='L146'></a><a href='#L146'>146</a>
-<a name='L147'></a><a href='#L147'>147</a>
-<a name='L148'></a><a href='#L148'>148</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L125'></a><a href='#L125'>125</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -259,27 +237,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -295,15 +252,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -368,11 +322,12 @@ import {
   Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { t } from "../i18n";
 &nbsp;
 const PrivacyPolicyScreen = () =&gt; {
   const openURL = (url) =&gt; {
     Linking.openURL(url).catch((err) =&gt;
-      console.error("Impossible d'ouvrir l'URL :", err)
+      console.error(t("privacy.consoleOpenUrlFailed"), err)
     );
   };
 &nbsp;
@@ -387,79 +342,55 @@ const PrivacyPolicyScreen = () =&gt; {
       ]}
     &gt;
       &lt;ScrollView contentContainerStyle={styles.container}&gt;
-        &lt;Text style={styles.title}&gt;Politique de confidentialité&lt;/Text&gt;
+        &lt;Text style={styles.title}&gt;{t("privacy.title")}&lt;/Text&gt;
 &nbsp;
-        &lt;Text style={styles.sectionTitle}&gt;1. Respect de la vie privée&lt;/Text&gt;
+        &lt;Text style={styles.sectionTitle}&gt;{t("privacy.s1.title")}&lt;/Text&gt;
         &lt;Text style={styles.paragraph}&gt;
-          L’application &lt;Text style={styles.bold}&gt;À Demain&lt;/Text&gt; respecte ta
-          vie privée. Aucune donnée personnelle n’est collectée, stockée ou
-          transmise à des tiers. Toutes les informations saisies (tâches,
-          historiques, préférences) restent strictement locales sur ton
-          appareil.
+          {t("privacy.s1.before")}
+          &lt;Text style={styles.bold}&gt;{t("app.brand")}&lt;/Text&gt;
+          {t("privacy.s1.after")}
         &lt;/Text&gt;
 &nbsp;
-        &lt;Text style={styles.sectionTitle}&gt;2. Données stockées&lt;/Text&gt;
-        &lt;Text style={styles.paragraph}&gt;
-          Les tâches, les séries et les statistiques sont sauvegardées
-          localement sur ton téléphone à l’aide du système de stockage sécurisé
-          d’Expo/React Native. Aucune donnée n’est transférée vers un serveur
-          externe.
-        &lt;/Text&gt;
+        &lt;Text style={styles.sectionTitle}&gt;{t("privacy.s2.title")}&lt;/Text&gt;
+        &lt;Text style={styles.paragraph}&gt;{t("privacy.s2.body")}&lt;/Text&gt;
 &nbsp;
-        &lt;Text style={styles.sectionTitle}&gt;3. Notifications&lt;/Text&gt;
-        &lt;Text style={styles.paragraph}&gt;
-          L’app peut t’envoyer des rappels si tu actives les notifications. Sur
-          iOS, elles sont totalement locales. Sur Android, l’envoi de
-          notifications utilise le service Firebase Cloud Messaging (FCM),
-          fourni par Google. Cela implique que certains identifiants techniques
-          (comme le token de notification ou l’ID de l’appareil) sont transmis à
-          Google pour permettre l’acheminement des notifications. Ces données ne
-          sont pas utilisées par l’application À Demain à d’autres fins, ne sont
-          ni collectées, ni stockées, ni revendues. Tu peux désactiver les
-          notifications à tout moment dans les réglages de ton téléphone.
-        &lt;/Text&gt;
+        &lt;Text style={styles.sectionTitle}&gt;{t("privacy.s3.title")}&lt;/Text&gt;
+        &lt;Text style={styles.paragraph}&gt;{t("privacy.s3.body")}&lt;/Text&gt;
 &nbsp;
-        &lt;Text style={styles.sectionTitle}&gt;4. Droits&lt;/Text&gt;
-        &lt;Text style={styles.paragraph}&gt;
-          Tu peux supprimer tes données en désinstallant l’application. Aucun
-          compte ni service distant n’est utilisé, tu restes maître de tes
-          données.
-        &lt;/Text&gt;
+        &lt;Text style={styles.sectionTitle}&gt;{t("privacy.s4.title")}&lt;/Text&gt;
+        &lt;Text style={styles.paragraph}&gt;{t("privacy.s4.body")}&lt;/Text&gt;
 &nbsp;
         &lt;TouchableOpacity
           onPress={() =&gt; openURL("https://ademain.agenorhouessou.fr/privacy")}
         &gt;
-          &lt;Text style={styles.link}&gt;📎 Voir la politique complète&lt;/Text&gt;
+          &lt;Text style={styles.link}&gt;{t("privacy.linkFullPolicy")}&lt;/Text&gt;
         &lt;/TouchableOpacity&gt;
 &nbsp;
-        &lt;Text style={styles.title}&gt;Mentions légales&lt;/Text&gt;
+        &lt;Text style={styles.title}&gt;{t("privacy.legalTitle")}&lt;/Text&gt;
 &nbsp;
         &lt;Text style={styles.paragraph}&gt;
-          &lt;Text style={styles.bold}&gt;Nom de l’application :&lt;/Text&gt; À Demain{"\n"}
-          &lt;Text style={styles.bold}&gt;Éditeur :&lt;/Text&gt; Agénor Houessou{"\n"}
-          &lt;Text style={styles.bold}&gt;E-mail :&lt;/Text&gt; agenorhouessou@hotmail.fr
+          &lt;Text style={styles.bold}&gt;{t("privacy.legalLabelAppName")}&lt;/Text&gt;{" "}
+          {t("app.brand")}
           {"\n"}
-          &lt;Text style={styles.bold}&gt;Technologies :&lt;/Text&gt; Expo, React Native,
-          EAS
-          &lt;TouchableOpacity
-            onPress={() =&gt; openURL("https://ademain.agenorhouessou.fr/terms")}
-          &gt;
-            &lt;Text style={styles.link}&gt;📎 Voir les mentions légales&lt;/Text&gt;
-          &lt;/TouchableOpacity&gt;
+          &lt;Text style={styles.bold}&gt;{t("privacy.legalLabelEditor")}&lt;/Text&gt;{" "}
+          Agénor Houessou{"\n"}
+          &lt;Text style={styles.bold}&gt;{t("privacy.legalLabelEmail")}&lt;/Text&gt;{" "}
+          agenorhouessou@hotmail.fr{"\n"}
+          &lt;Text style={styles.bold}&gt;{t("privacy.legalLabelTech")}&lt;/Text&gt;{" "}
+          {t("privacy.legalTechValue")}
         &lt;/Text&gt;
 &nbsp;
-        &lt;Text style={styles.sectionTitle}&gt;Propriété intellectuelle&lt;/Text&gt;
-        &lt;Text style={styles.paragraph}&gt;
-          Tous les contenus textuels, visuels et fonctionnels de l’app sont
-          protégés par les droits d’auteur. Toute reproduction, même partielle,
-          est interdite sans autorisation écrite.
-        &lt;/Text&gt;
+        &lt;TouchableOpacity
+          onPress={() =&gt; openURL("https://ademain.agenorhouessou.fr/terms")}
+        &gt;
+          &lt;Text style={styles.link}&gt;{t("privacy.linkTerms")}&lt;/Text&gt;
+        &lt;/TouchableOpacity&gt;
 &nbsp;
-        &lt;Text style={styles.sectionTitle}&gt;Contact&lt;/Text&gt;
-        &lt;Text style={styles.paragraph}&gt;
-          Pour toute question, suggestion ou réclamation :{"\n"}
-          📩 agenorhouessou@hotmail.com
-        &lt;/Text&gt;
+        &lt;Text style={styles.sectionTitle}&gt;{t("privacy.ipTitle")}&lt;/Text&gt;
+        &lt;Text style={styles.paragraph}&gt;{t("privacy.ipBody")}&lt;/Text&gt;
+&nbsp;
+        &lt;Text style={styles.sectionTitle}&gt;{t("privacy.contactTitle")}&lt;/Text&gt;
+        &lt;Text style={styles.paragraph}&gt;{t("privacy.contactBody")}&lt;/Text&gt;
       &lt;/ScrollView&gt;
     &lt;/SafeAreaView&gt;
   );
@@ -511,7 +442,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-23T21:18:22.960Z
+                at 2026-03-29T20:10:45.925Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

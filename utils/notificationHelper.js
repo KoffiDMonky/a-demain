@@ -1,5 +1,6 @@
 import * as Notifications from "expo-notifications";
 import { Alert } from "react-native";
+import { t } from "../i18n";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -24,7 +25,7 @@ export async function scheduleTaskNotification(task) {
   try {
     return await Notifications.scheduleNotificationAsync({
       content: {
-        title: "N'oublie pas 👀",
+        title: t("notification.taskTitle"),
         body: task.text,
         sound: "default",
       },
@@ -56,8 +57,8 @@ export async function ensureNotificationPermission() {
     const { status: newStatus } = await Notifications.requestPermissionsAsync();
     if (newStatus !== "granted") {
       Alert.alert(
-        "Notifications désactivées",
-        "Active-les dans les réglages pour recevoir tes rappels de tâches."
+        t("notification.permissionTitle"),
+        t("notification.permissionMessage")
       );
       return false;
     }

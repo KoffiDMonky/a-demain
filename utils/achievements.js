@@ -2,6 +2,7 @@
  * Succès / badges — stockage local (AsyncStorage), pas de notifications.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { t } from "../i18n";
 
 export const UNLOCKED_KEY = "achievement_unlocked_ids";
 export const META_KEY = "achievement_meta";
@@ -37,85 +38,61 @@ const isSameDay = (d1, d2) =>
 export const ACHIEVEMENT_DEFINITIONS = [
   {
     id: "explorer",
-    title: "Premier pas",
-    description: "Créer au moins une tâche",
     icon: "footsteps-outline",
     test: (c) => c.totalTasks >= 1,
   },
   {
     id: "premiere_victoire",
-    title: "Première victoire",
-    description: "Cocher une tâche accomplie",
     icon: "checkmark-circle-outline",
     test: (c) => c.completedTasks >= 1 || c.lifetimeCompleted >= 1,
   },
   {
     id: "organisateur",
-    title: "Organisateur",
-    description: "Planifier une tâche pour demain",
     icon: "calendar-outline",
     test: (c) => c.everTomorrowTask || c.hasTomorrowTask,
   },
   {
     id: "pause",
-    title: "Pause stratégique",
-    description: "Reporter une tâche à demain (swipe)",
     icon: "time-outline",
     test: (c) => c.totalSnoozes >= 1 || c.lifetimeSnoozes >= 1,
   },
   {
     id: "serie_bronze",
-    title: "Série de bronze",
-    description: "Atteindre une série de 3 jours",
     icon: "flame-outline",
     test: (c) => c.effectiveStreak >= 3,
   },
   {
     id: "serie_argent",
-    title: "Série d’argent",
-    description: "Atteindre une série de 7 jours",
     icon: "flame",
     test: (c) => c.effectiveStreak >= 7,
   },
   {
     id: "serie_or",
-    title: "Série d’or",
-    description: "Atteindre une série de 30 jours",
     icon: "trophy-outline",
     test: (c) => c.effectiveStreak >= 30,
   },
   {
     id: "record",
-    title: "Record personnel",
-    description: "Meilleure série à 10 jours ou plus",
     icon: "ribbon-outline",
     test: (c) => c.bestStreak >= 10,
   },
   {
     id: "marathon_10",
-    title: "Marathon",
-    description: "10 tâches cochées au total",
     icon: "flag-outline",
     test: (c) => c.lifetimeCompleted >= 10,
   },
   {
     id: "marathon_50",
-    title: "Ultra marathon",
-    description: "50 tâches cochées au total",
     icon: "medal-outline",
     test: (c) => c.lifetimeCompleted >= 50,
   },
   {
     id: "journee_parfaite",
-    title: "Journée parfaite",
-    description: "Toutes les tâches du jour sont cochées",
     icon: "sunny-outline",
     test: (c) => c.todayTotal > 0 && c.todayDone === c.todayTotal,
   },
   {
     id: "procrastination_assumee",
-    title: "Procrastination assumée",
-    description: "10 reports au total",
     icon: "shuffle-outline",
     test: (c) => c.lifetimeSnoozes >= 10,
   },
@@ -242,8 +219,8 @@ export async function syncAchievementsWithContext(context) {
 
   return ACHIEVEMENT_DEFINITIONS.map((def) => ({
     id: def.id,
-    title: def.title,
-    description: def.description,
+    title: t(`achievement.${def.id}.title`),
+    description: t(`achievement.${def.id}.description`),
     icon: def.icon,
     unlocked: prev.has(def.id),
   }));

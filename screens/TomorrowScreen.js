@@ -15,6 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import TomorrowTaskItem from "../components/TomorrowTaskItem.js";
 import { cancelTaskNotification } from "../utils/notificationHelper";
+import { t } from "../i18n";
 
 const TomorrowScreen = ({ navigation }) => {
   const [tomorrowTasks, setTomorrowTasks] = useState([]);
@@ -89,7 +90,7 @@ const TomorrowScreen = ({ navigation }) => {
             resizeMode="contain"
           />
         </View>
-        <Text style={styles.title}>Tâches prévues pour demain</Text>
+        <Text style={styles.title}>{t("tomorrow.title")}</Text>
         <FlatList
           data={tomorrowTasks}
           keyExtractor={(item) => item.id}
@@ -97,7 +98,7 @@ const TomorrowScreen = ({ navigation }) => {
           renderItem={renderItem}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Rien de prévu pour demain 😌</Text>
+              <Text style={styles.emptyText}>{t("tomorrow.empty")}</Text>
             </View>
           }
         />

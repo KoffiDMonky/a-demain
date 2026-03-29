@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import * as Localization from 'expo-localization';
+import { t } from '../i18n';
 
 const TimePicker = ({ value, onChange }) => {
   const [showIosPicker, setShowIosPicker] = useState(false);
@@ -24,7 +26,12 @@ const TimePicker = ({ value, onChange }) => {
     <View style={styles.container}>
       <TouchableOpacity onPress={showPicker} style={styles.button}>
         <Text style={styles.buttonText}>
-          🕒 Rappel à {value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {t('timePicker.reminderAt', {
+            time: value.toLocaleTimeString(
+              Localization.getLocales()[0]?.languageTag ?? 'fr-FR',
+              { hour: '2-digit', minute: '2-digit' }
+            ),
+          })}
         </Text>
       </TouchableOpacity>
 

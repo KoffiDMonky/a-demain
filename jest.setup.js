@@ -1,6 +1,10 @@
 // Extend matchers (RTL 12.4+ inclut les matchers, @testing-library/jest-native déprécié)
 import '@testing-library/jest-native/extend-expect';
 
+jest.mock('expo-localization', () => ({
+  getLocales: () => [{ languageCode: 'fr', languageTag: 'fr-FR' }],
+}));
+
 // ReanimatedSwipeable : même mock que RNGH (évite le module natif / Reanimated en tests)
 jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
   const rngh = require('./__mocks__/react-native-gesture-handler.js');
@@ -24,6 +28,8 @@ beforeAll(() => {
   global.console.warn = (...args) => {
     const msg = typeof args[0] === 'string' ? args[0] : '';
     if (msg.includes('Notification trop proche ou passée')) return;
+    // Bruit au chargement de expo-notifications sous Jest (Expo Go / dev build)
+    if (msg.startsWith('expo-notifications:') && msg.includes('Expo Go')) return;
     originalWarn.call(console, ...args);
   };
 });

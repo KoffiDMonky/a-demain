@@ -766,6 +766,31 @@ describe("HomeScreen", () => {
     });
   });
 
+  it("snooze : AsyncStorage vide au press (updateTaskStatus, allTasks = [])", async () => {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    await AsyncStorage.setItem(
+      "tasks",
+      JSON.stringify([
+        {
+          id: "snooze-empty-store",
+          text: "Snooze storage vide",
+          dueDate: today.toISOString(),
+          status: "pending",
+          snoozeCount: 0,
+          notificationId: null,
+        },
+      ])
+    );
+    render(<HomeScreen navigation={getDefaultNavigation()} />);
+    await screen.findByText("Snooze storage vide");
+    await AsyncStorage.removeItem("tasks");
+    fireEvent.press(screen.getByTestId("icon-time-outline"));
+    await waitFor(async () => {
+      expect(await AsyncStorage.getItem("tasks")).toBeNull();
+    });
+  });
+
   it("snooze : ne persiste rien si buildTasksAfterStatusChange retourne null", async () => {
     const spy = jest
       .spyOn(applyHomeTaskStatus, "buildTasksAfterStatusChange")

@@ -1,6 +1,7 @@
 import React, { useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { t } from '../i18n';
 
 export default function TaskModalSheet() {
   const bottomSheetRef = useRef(null);
@@ -12,11 +13,11 @@ export default function TaskModalSheet() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Button title="Ajouter une tâche" onPress={openSheet} />
+      <Button title={t('taskModal.addButton')} onPress={openSheet} />
 
       <BottomSheet ref={bottomSheetRef} index={-1} snapPoints={snapPoints}>
         <View style={styles.content}>
-          <Text>Contenu pour la nouvelle tâche ici</Text>
+          <Text>{t('taskModal.sheetContent')}</Text>
           {/* Ajoute ton formulaire ici */}
         </View>
       </BottomSheet>

@@ -32,6 +32,63 @@ Elle est publiée via **Expo** et testable facilement :
 📱 Tester l'app : [expo.dev/a-demain](https://expo.dev/@agenorhouessou/a-demain)  
 *(ou scanner le QR code depuis l'app Expo Go)*
 
+### Publier une mise à jour (Expo Go sans `expo start`)
+
+Le projet est configuré pour **EAS Update** (`updates.url` + `runtimeVersion` dans `app.json`).  
+Après un `eas update`, le bundle JS est servi par Expo : tu peux ouvrir le projet dans **Expo Go** depuis [ta page projet](https://expo.dev/accounts/agenorhouessou/projects/a-demain) sans serveur local.
+
+1. **Connexion** (une fois) : `npx eas-cli login`
+2. **Publier** sur le canal `preview` (aligné avec `eas.json`) :
+   ```bash
+   npm run eas:update:preview -- --message "Description de la version"
+   ```
+   Ou production : `npm run eas:update:production -- --message "…"`
+3. Sur le téléphone : **Expo Go** → onglet **Projets** / lien depuis **expo.dev** → ouvre **À Demain** ; l’app télécharge la dernière mise à jour du canal correspondant.
+
+> **Note :** `runtimeVersion` dans `app.json` doit rester compatible avec la version d’**Expo Go** (SDK). Après une montée de version Expo, incrémente `version` / `runtimeVersion` si besoin. Si tu ajoutes du code natif non supporté par Expo Go, il faudra un build **EAS Build** (dev client ou store), pas seulement `eas update`.
+
+### Build Android APK (EAS Build)
+
+Un **APK** installable (test / partage interne) est produit avec le profil **`preview`** de `eas.json` (`buildType: apk`, canal `preview`).
+
+1. Connexion (une fois) : `npx eas-cli login`
+2. Lancer le build sur les serveurs Expo :
+   ```bash
+   npm run eas:build:android:apk
+   ```
+   Équivalent direct : `eas build --platform android --profile preview`
+3. Suivre le lien affiché dans le terminal ou ouvrir [expo.dev](https://expo.dev) → **Builds** : télécharger l’**APK** une fois le build terminé.
+
+**APK « production »** (même canal `production` que les mises à jour OTA, build release en APK — pas le `.aab` Play Store) :
+
+```bash
+npm run eas:build:android:apk:production
+```
+
+Équivalent : `eas build --platform android --profile production-apk`
+
+> Le profil **`production`** (sans suffixe) génère un **Android App Bundle** (`.aab`) pour le Play Store. Le profil **`production-apk`** reprend `autoIncrement` + canal `production` avec `buildType: apk` pour installation directe.
+
+### Google Play Store — fichier à importer
+
+La **Play Console** attend un **App Bundle** (fichier **`.aab`**), pas un APK. Si tu vois *« Importez un app bundle valide »*, c’est en général que tu as importé un **`.apk`** (profil `preview` ou `production-apk`).
+
+1. Générer le bon artefact :
+   ```bash
+   npm run eas:build:android:play
+   ```
+   (équivalent : `eas build --platform android --profile production`)
+2. Télécharger le **`.aab`** depuis [expo.dev → ton projet → Builds](https://expo.dev).
+3. Dans la Play Console : **Production** (ou test interne) → **Créer une nouvelle version** → importer ce **`.aab`**.
+
+Ensuite tu peux automatiser l’envoi avec `eas submit --platform android --latest` (compte Google Play lié).
+
+---
+
+## 🧪 Tests automatisés
+
+Voir **[README_TESTS.md](./README_TESTS.md)** (Jest, React Native Testing Library, structure `__tests__/`, commandes).
+
 ---
 
 ## 🛠️ Stack technique

@@ -7,10 +7,12 @@ import {
   screen,
   fireEvent,
   waitFor,
+  act,
 } from "@testing-library/react-native";
 import { KeyboardAvoidingView, Platform, Switch } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NewTaskScreen from "../../screens/NewTaskScreen";
+import { t } from "../../i18n";
 
 const mockGoBack = jest.fn();
 const mockNavigate = jest.fn();
@@ -52,9 +54,7 @@ describe("NewTaskScreen", () => {
     it("affiche le placeholder du champ texte", () => {
       render(<NewTaskScreen />);
       expect(
-        screen.getByPlaceholderText(
-          "Ex: Appeler Mamie, ranger le bureau..."
-        )
+        screen.getByPlaceholderText(t("newTask.placeholder"))
       ).toBeOnTheScreen();
     });
 
@@ -72,9 +72,7 @@ describe("NewTaskScreen", () => {
   describe("interactions (création)", () => {
     it("met à jour le champ texte quand on saisit", () => {
       render(<NewTaskScreen />);
-      const input = screen.getByPlaceholderText(
-        "Ex: Appeler Mamie, ranger le bureau..."
-      );
+      const input = screen.getByPlaceholderText(t("newTask.placeholder"));
       fireEvent.changeText(input, "Appeler Mamie");
       expect(input.props.value).toBe("Appeler Mamie");
     });
@@ -94,9 +92,7 @@ describe("NewTaskScreen", () => {
 
     it("sauvegarde la tâche et navigue vers Accueil après ajout", async () => {
       render(<NewTaskScreen />);
-      const input = screen.getByPlaceholderText(
-        "Ex: Appeler Mamie, ranger le bureau..."
-      );
+      const input = screen.getByPlaceholderText(t("newTask.placeholder"));
       fireEvent.changeText(input, "Nouvelle tâche");
       fireEvent.press(screen.getByText("Ajouter la tâche"));
 
@@ -196,7 +192,7 @@ describe("NewTaskScreen", () => {
       const notificationHelper = require("../../utils/notificationHelper");
       render(<NewTaskScreen />);
       fireEvent.changeText(
-        screen.getByPlaceholderText("Ex: Appeler Mamie, ranger le bureau..."),
+        screen.getByPlaceholderText(t("newTask.placeholder")),
         "Tâche avec rappel"
       );
       const switchEl = screen.getByRole("switch");
@@ -258,6 +254,99 @@ describe("NewTaskScreen", () => {
         expect(notificationHelper.cancelTaskNotification).toHaveBeenCalledWith("old-notif");
         expect(notificationHelper.scheduleTaskNotification).toHaveBeenCalled();
       });
+      jest.restoreAllMocks();
+    });
+
+    it("édition : conserve les autres tâches inchangées dans le tableau", async () => {
+      const other = {
+        id: "autre",
+        text: "Autre tâche",
+        dueDate: new Date().toISOString(),
+        status: "pending",
+        snoozeCount: 0,
+        notificationId: null,
+      };
+      const edit = {
+        id: "edit-multi",
+        text: "À éditer",
+        dueDate: new Date(Date.now() + 86400000).toISOString(),
+        notificationId: null,
+      };
+      await AsyncStorage.setItem("tasks", JSON.stringify([other, edit]));
+
+      jest.spyOn(require("@react-navigation/native"), "useRoute").mockReturnValue({
+        params: { task: edit },
+      });
+
+      render(<NewTaskScreen />);
+      fireEvent.changeText(screen.getByDisplayValue("À éditer"), "Modifié");
+      fireEvent.press(screen.getByText("Modifier la tâche"));
+
+      await waitFor(async () => {
+        const list = JSON.parse((await AsyncStorage.getItem("tasks")) || "[]");
+        expect(list).toHaveLength(2);
+        expect(list.find((x) => x.id === "autre").text).toBe("Autre tâche");
+        expect(list.find((x) => x.id === "edit-multi").text).toBe("Modifié");
+      });
+      jest.restoreAllMocks();
+    });
+
+    it("rappel activé mais permission refusée : ne planifie pas de notification", async () => {
+      const notificationHelper = require("../../utils/notificationHelper");
+      notificationHelper.ensureNotificationPermission.mockResolvedValueOnce(false);
+
+      render(<NewTaskScreen />);
+      fireEvent.changeText(
+        screen.getByPlaceholderText(t("newTask.placeholder")),
+        "Sans notif"
+      );
+      fireEvent(screen.getByRole("switch"), "valueChange", true);
+      fireEvent.press(screen.getByText("Ajouter la tâche"));
+
+      await waitFor(() => {
+        expect(notificationHelper.ensureNotificationPermission).toHaveBeenCalled();
+      });
+      expect(notificationHelper.scheduleTaskNotification).not.toHaveBeenCalled();
+    });
+
+    it("TimePicker onChange avec date : met à jour l’heure du rappel", async () => {
+      const { UNSAFE_getAllByType } = render(<NewTaskScreen />);
+      fireEvent(screen.getByRole("switch"), "valueChange", true);
+      const TimePicker = require("../../components/TimePicker").default;
+      const picker = UNSAFE_getAllByType(TimePicker)[0];
+      const next = new Date(2026, 5, 10, 14, 35, 0);
+      await act(async () => {
+        picker.props.onChange({}, next);
+      });
+      const updated = UNSAFE_getAllByType(TimePicker)[0];
+      expect(updated.props.value.getHours()).toBe(14);
+      expect(updated.props.value.getMinutes()).toBe(35);
+    });
+
+    it("TimePicker onChange sans date : ne change pas l’heure du rappel", async () => {
+      const due = new Date(new Date().setHours(10, 30, 0, 0));
+      jest.spyOn(require("@react-navigation/native"), "useRoute").mockReturnValue({
+        params: {
+          task: {
+            id: "tp-branch",
+            text: "Branche date vide",
+            dueDate: due.toISOString(),
+            notificationId: "n1",
+          },
+        },
+      });
+
+      const { UNSAFE_getAllByType } = render(<NewTaskScreen />);
+      const TimePicker = require("../../components/TimePicker").default;
+      const picker = UNSAFE_getAllByType(TimePicker)[0];
+      const before = picker.props.value.getTime();
+
+      await act(async () => {
+        picker.props.onChange({}, undefined);
+      });
+
+      const after = UNSAFE_getAllByType(TimePicker)[0].props.value.getTime();
+      expect(after).toBe(before);
       jest.restoreAllMocks();
     });
   });

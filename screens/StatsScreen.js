@@ -23,6 +23,7 @@ import {
   buildAchievementContext,
   syncAchievementsWithContext,
 } from "../utils/achievements";
+import { t, MOTIVATION_MESSAGE_COUNT } from "../i18n";
 
 const StatItem = ({ label, value }) => (
   <LinearGradient
@@ -139,30 +140,8 @@ const StatsScreen = ({ navigation }) => {
   };
 
   const getMotivationalMessage = () => {
-    const messages = [
-      "Tu avances, c’est l’essentiel 🌱",
-      "Chaque petit pas compte 🚶‍♂️",
-      "Demain est un nouveau départ ☀️",
-      "Tu fais de ton mieux, et c’est déjà super 💪",
-      "Une tâche à la fois 🧘‍♀️",
-      "Tu as le droit d’aller doucement 🐢",
-      "Ce que tu fais aujourd’hui compte 🧩",
-      "Tu n’as pas besoin d’être parfait, juste constant 🔄",
-      "Respire un bon coup, et continue 🌬️",
-      "La clarté vient en avançant 🔍",
-      "Tu es déjà en train de progresser 📈",
-      "Même les jours lents sont utiles ⏳",
-      "Fais confiance au processus 🌀",
-      "Tu es plus capable que tu ne le crois ✨",
-      "Un petit effort vaut mieux que rien 🪴",
-      "Le repos fait aussi partie du progrès 🛌",
-      "Chaque action est une victoire 🏆",
-      "Aujourd’hui est un bon jour pour recommencer 🔁",
-      "Sois fier de ce que tu fais, pas de ce qu’il reste à faire 🎯",
-      "Tu construis ton avenir, une case à la fois 📅",
-    ];
-    const index = Math.floor(Math.random() * messages.length);
-    return messages[index];
+    const index = Math.floor(Math.random() * MOTIVATION_MESSAGE_COUNT);
+    return t(`stats.motivation.${index}`);
   };
 
   return (
@@ -218,7 +197,7 @@ const StatsScreen = ({ navigation }) => {
         {stats.todayTotal > 0 && (
           <View style={styles.progressCard}>
             <View style={styles.progressLabels}>
-              <Text style={styles.progressTitle}>Avancement du jour</Text>
+              <Text style={styles.progressTitle}>{t("stats.progressTitle")}</Text>
               <Text style={styles.progressFraction}>
                 {stats.todayDone} / {stats.todayTotal}
               </Text>
@@ -247,15 +226,21 @@ const StatsScreen = ({ navigation }) => {
         )}
 
         <View style={styles.grid}>
-          <StatItem label="Tâches créées" value={stats.totalTasks} />
-          <StatItem label="Tâches complétées" value={stats.completedTasks} />
+          <StatItem label={t("stats.labelCreated")} value={stats.totalTasks} />
+          <StatItem
+            label={t("stats.labelCompleted")}
+            value={stats.completedTasks}
+          />
           {/* <StatItem label="Snoozes" value={stats.totalSnoozes} /> */}
           <StatItem
-            label="Procrastination (%)"
+            label={t("stats.labelProcrastination")}
             value={`${stats.snoozePercentage} %`}
           />
           {/* <StatItem label="Record de série" value={stats.bestStreak} /> */}
-          <StatItem label="Série en cours" value={stats.currentStreak} />
+          <StatItem
+            label={t("stats.labelStreak")}
+            value={stats.currentStreak}
+          />
         </View>
 
         <LinearGradient
@@ -267,10 +252,8 @@ const StatsScreen = ({ navigation }) => {
           <Text style={styles.message}>{getMotivationalMessage()}</Text>
         </LinearGradient>
 
-        <Text style={styles.sectionTitle}>Succès</Text>
-        <Text style={styles.sectionHint}>
-          Débloque des badges en utilisant l’app.
-        </Text>
+        <Text style={styles.sectionTitle}>{t("stats.successTitle")}</Text>
+        <Text style={styles.sectionHint}>{t("stats.successHint")}</Text>
         <View style={styles.badgesGrid}>
           {achievements.map((a) => (
             <View
@@ -311,7 +294,7 @@ const StatsScreen = ({ navigation }) => {
                 ]}
                 numberOfLines={3}
               >
-                {a.unlocked ? a.description : "???"}
+                {a.unlocked ? a.description : t("stats.badgeHidden")}
               </Text>
             </View>
           ))}

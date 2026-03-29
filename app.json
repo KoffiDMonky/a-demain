@@ -2,7 +2,7 @@
   "expo": {
     "name": "À Demain",
     "slug": "a-demain",
-    "version": "1.0.12",
+    "version": "2.0.0",
     "platforms": [
       "ios",
       "android"
@@ -40,7 +40,7 @@
       }
     },
     "owner": "agenorhouessou",
-    "runtimeVersion": "1.0.12",
+    "runtimeVersion": "2.0.0",
     "updates": {
       "url": "https://u.expo.dev/c262e53f-d293-4e81-b54f-e44fd09463c0"
     },
@@ -54,7 +54,8 @@
             "targetSdkVersion": 35
           }
         }
-      ]
+      ],
+      "expo-localization"
     ]
   }
 }
